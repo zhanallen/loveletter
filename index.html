@@ -290,7 +290,46 @@
   .modal-box h3{font-family:'Cormorant Garamond',serif;margin-top:0;color:var(--ink);}
   .rule-item{margin-bottom:12px;border-bottom:1px solid rgba(0,0,0,0.1);padding-bottom:8px;}
   .rule-item b{color:var(--gold-deep);}
-  .top-link{position:fixed;top:10px;right:14px;font-size:12px;color:var(--parchment-dark);cursor:pointer;text-decoration:underline;z-index:30;}
+  .top-btn {
+    position: fixed;
+    top: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(26, 5, 9, 0.88);
+    border: 1px solid rgba(201, 164, 80, 0.4);
+    color: var(--parchment-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 30;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+  }
+  .top-btn:hover {
+    color: var(--gold-light);
+    border-color: var(--gold);
+    transform: scale(1.08);
+    box-shadow: 0 0 10px rgba(232, 205, 126, 0.4), 0 3px 8px rgba(0,0,0,0.5);
+  }
+  .top-btn:active {
+    transform: scale(0.95);
+  }
+  .chat-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    border: 1px solid #1a0509;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  }
   .emote-toast{
     position:fixed;top:54px;left:50%;transform:translateX(-50%);
     background:linear-gradient(180deg, var(--gold-light), var(--gold-deep));
@@ -928,10 +967,26 @@
 </style>
 </head>
 <body>
-<div class="top-link" onclick="toggleRules()">規則 ‣</div>
-<div class="top-link" id="chatLink" style="top:34px;display:none;" onclick="toggleChat()">聊天室 ‣</div>
-<div class="top-link" id="leaveLink" style="left:14px;right:auto;display:none;" onclick="toggleRoomMenu()">‣ 房間選項</div>
-<div class="top-link" style="left:14px;right:auto;top:34px;" onclick="toggleSettings()">‣ 音效設定</div>
+<div class="top-btn" onclick="toggleRules()" style="right:14px;" title="規則說明">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+    <path d="M12 3c-1.2 0-2.4.4-3.4 1-1.3.8-2.6 1-3.6.8-.5-.1-1 .3-1 .8v12.2c0 .4.3.8.7.9.8.1 1.9 0 3-.6.8-.5 1.7-.8 2.7-.8 1 0 2 .3 2.8.8.8-.5 1.8-.8 2.8-.8.9 0 1.8.3 2.6.8 1.2.6 2.3.7 3.1.6.4-.1.7-.4.7-.9V4.8c0-.5-.5-.9-1-.8-1 .2-2.3 0-3.6-.8-1-.6-2.2-1-3.4-1zm-1 2.5v11c-.7-.3-1.6-.5-2.5-.5-.9 0-1.9.2-2.5.6V6.1c.5-.3 1.2-.5 2-.5 1 0 2 .2 3 .9zm10 .6v11c-.6-.4-1.6-.6-2.5-.6-.9 0-1.8.2-2.5.5v-11c1 .7 2 .9 3 .9.8 0 1.5-.2 2-.3z"/>
+  </svg>
+</div>
+<div class="top-btn" id="chatLink" style="right:58px;display:none;" onclick="toggleChat()" title="聊天室">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm0-3h12v2H6V6zm0 6h9v2H6v-2z"/>
+  </svg>
+</div>
+<div class="top-btn" id="leaveLink" style="left:14px;display:none;" onclick="toggleRoomMenu()" title="房間選項">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+    <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+  </svg>
+</div>
+<div class="top-btn" onclick="toggleSettings()" style="left:58px;" title="音效設定">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+  </svg>
+</div>
 <div id="app"></div>
 
 <script>
@@ -2067,11 +2122,16 @@ function render(){
   const ni=document.getElementById('nameInput');
   if(ni && myName) ni.value=myName;
   const leaveLink=document.getElementById('leaveLink');
-  if(leaveLink) leaveLink.style.display = roomCode ? 'block' : 'none';
+  if(leaveLink) leaveLink.style.display = roomCode ? 'flex' : 'none';
   const chatLink=document.getElementById('chatLink');
   if(chatLink){
-    chatLink.style.display = roomCode ? 'block' : 'none';
-    chatLink.innerHTML = `聊天室 ‣${chatUnread>0?` <span style="background:var(--danger);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;">${chatUnread}</span>`:''}`;
+    chatLink.style.display = roomCode ? 'flex' : 'none';
+    chatLink.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm0-3h12v2H6V6zm0 6h9v2H6v-2z"/>
+      </svg>
+      ${chatUnread > 0 ? `<span class="chat-badge">${chatUnread}</span>` : ''}
+    `;
   }
   const ci=document.getElementById('chatInput');
   if(ci) ci.value=chatDraft;
