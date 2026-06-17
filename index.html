@@ -745,6 +745,14 @@
     cursor: not-allowed;
     opacity: 0.45;
   }
+  /* Shown but not selectable (not your turn) — keep it readable, drop the affordances. */
+  .table-hand-card.readonly {
+    cursor: default;
+  }
+  .table-hand-card.readonly:hover {
+    transform: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  }
   .table-hand-card .card-badge {
     position: absolute;
     top: 3px;
@@ -1037,7 +1045,14 @@
   .game-table.mobile .seat-name { font-size: 12.5px; }
   .game-table.mobile .table-btn {
     font-size: 13px;
-    padding: 9px 15px;
+    padding: 6px 15px;
+  }
+  /* Phone: stack the turn buttons vertically — 重新選擇 on top, 確認出牌 below.
+     Keep them short so the stack clears the hand cards above. */
+  .game-table.mobile .table-action-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
   }
 </style>
 </head>
@@ -1929,6 +1944,9 @@ function forcedCountess(){
   return th.includes(7) && (th.includes(6)||th.includes(5));
 }
 function selectCard(v){
+  // Can only choose a card to play on your own turn, after drawing from the deck.
+  if(!state || state.currentPlayerId!==myId) return;
+  if(!localUI.stage){ showNotice('請先點擊牌堆抽牌,再選擇要出的牌。'); return; }
   if(forcedCountess() && v!==7){
     showNotice('你同時持有伯爵夫人與國王/王子,必須棄掉伯爵夫人。');
     return;
@@ -2480,10 +2498,13 @@ function renderGameTable() {
     const th = tempHand();
     let cardsHtml = '';
     th.forEach(v => {
-      const locked = forcedCountess() && v !== 7;
+      const countessLock = !!localUI.stage && forcedCountess() && v !== 7;
       const sel = localUI.selectedCard === v ? ' selected' : '';
-      const clickAction = locked ? '' : `onclick="selectCard(${v})"`;
-      const cardClass = `table-hand-card${sel}${locked ? ' locked' : ''}`;
+      // Cards are only selectable on your own turn (and the selectCard guard
+      // further requires that you've already drawn from the deck). On other
+      // players' turns the hand is shown read-only.
+      const clickAction = (myTurn && !countessLock) ? `onclick="selectCard(${v})"` : '';
+      const cardClass = `table-hand-card${sel}${countessLock ? ' locked' : ''}${myTurn ? '' : ' readonly'}`;
       cardsHtml += `
         <div class="${cardClass}" ${clickAction}>
           <div class="card-badge">${cardRoman(v)}</div>
