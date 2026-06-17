@@ -2465,7 +2465,6 @@ function renderRoundEnd(){
     html+=`<div class="player-row"><span>${escapeHtml(p.name)}${p.left?'(已離開)':!p.alive?'(已出局)':''}</span><span>${p.hand.length?cardRoman(p.hand[0])+' '+cardName(p.hand[0]):'—'}</span></div>`;
   });
   html+=`</div>`;
-  html+=renderGameTable();
   html+=`<div class="panel center-text">
     ${isHost?`<div class="btn full" onclick="doNextRound()">下一輪</div>`:`<div class="hint">等待房主開始下一輪…</div>`}
   </div>`;
