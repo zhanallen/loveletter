@@ -991,6 +991,54 @@
       transform: translateX(-50%) translateY(-5px);
     }
   }
+
+  /* ---- Mobile: portrait table, full-bleed + larger cards/text ---- */
+  @media (max-width: 587px) {
+    /* Break the table out of the body's 12px side padding so it can use the whole
+       viewport width — this lets the portrait canvas scale closer to 1:1. Countering
+       the padding (rather than using 100vw) avoids a stray horizontal scrollbar. */
+    .game-table-container.mobile {
+      width: calc(100% + 24px);
+      margin-left: -12px;
+      margin-right: -12px;
+    }
+  }
+  .game-table.mobile .table-center { top: 40%; }
+  .game-table.mobile .table-my-hand { bottom: 96px; gap: 10px; }
+  .game-table.mobile .table-hand-card {
+    width: 104px;
+    height: 148px;
+    border-radius: 7px;
+    padding: 7px 7px 5px;
+  }
+  .game-table.mobile .table-hand-card .card-portrait-wrap {
+    height: 80px;
+    margin-bottom: 6px;
+  }
+  .game-table.mobile .table-hand-card .card-badge {
+    width: 24px;
+    height: 24px;
+    font-size: 13px;
+  }
+  .game-table.mobile .table-hand-card .cname {
+    font-size: 13px;
+    margin-bottom: 3px;
+    padding-bottom: 2px;
+  }
+  .game-table.mobile .table-hand-card .cdesc {
+    font-size: 9.5px;
+    line-height: 1.28;
+    -webkit-line-clamp: 4;
+  }
+  .game-table.mobile .player-seat {
+    width: 112px;
+    padding: 7px;
+  }
+  .game-table.mobile .seat-name { font-size: 12.5px; }
+  .game-table.mobile .table-btn {
+    font-size: 13px;
+    padding: 9px 15px;
+  }
 </style>
 </head>
 <body>
@@ -1193,7 +1241,22 @@ function getSeatedPlayers() {
   return rotated;
 }
 
-function getSeatStyle(numPlayers, seatIndex) {
+function getSeatStyle(numPlayers, seatIndex, mobile) {
+  if (mobile) {
+    // Portrait canvas (400 x 600): me at the bottom, opponents up top / on the sides.
+    if (seatIndex === 0) return 'bottom: 16px; left: 50%; transform: translateX(-50%);';
+    if (numPlayers === 2) {
+      if (seatIndex === 1) return 'top: 16px; left: 50%; transform: translateX(-50%);';
+    } else if (numPlayers === 3) {
+      if (seatIndex === 1) return 'top: 18px; left: 24%; transform: translateX(-50%);';
+      if (seatIndex === 2) return 'top: 18px; right: 24%; transform: translateX(50%);';
+    } else if (numPlayers === 4) {
+      if (seatIndex === 1) return 'top: 40%; left: 10px; transform: translateY(-50%);';
+      if (seatIndex === 2) return 'top: 16px; left: 50%; transform: translateX(-50%);';
+      if (seatIndex === 3) return 'top: 40%; right: 10px; transform: translateY(-50%);';
+    }
+    return 'top: 0; left: 0;';
+  }
   if (seatIndex === 0) {
     return 'bottom: 12px; left: 50%; transform: translateX(-50%);';
   }
@@ -1210,7 +1273,23 @@ function getSeatStyle(numPlayers, seatIndex) {
   return 'top: 0; left: 0;';
 }
 
-function getDiscardStyle(numPlayers, seatIndex) {
+function getDiscardStyle(numPlayers, seatIndex, mobile) {
+  if (mobile) {
+    // Portrait canvas (400 x 600). Keep each pile near its owner but clear of the
+    // centre piles and the player's own hand (which sits across the bottom).
+    if (seatIndex === 0) return 'bottom: 16px; left: 12px; justify-content: flex-start; max-width: 124px;';
+    if (numPlayers === 2) {
+      if (seatIndex === 1) return 'top: 96px; left: 50%; transform: translateX(-50%); justify-content: center;';
+    } else if (numPlayers === 3) {
+      if (seatIndex === 1) return 'top: 98px; left: 24%; transform: translateX(-50%); justify-content: center; max-width: 130px;';
+      if (seatIndex === 2) return 'top: 98px; right: 24%; transform: translateX(50%); justify-content: center; max-width: 130px;';
+    } else if (numPlayers === 4) {
+      if (seatIndex === 1) return 'top: 58%; left: 10px; justify-content: flex-start; max-width: 96px;';
+      if (seatIndex === 2) return 'top: 96px; left: 50%; transform: translateX(-50%); justify-content: center;';
+      if (seatIndex === 3) return 'top: 58%; right: 10px; justify-content: flex-end; max-width: 96px;';
+    }
+    return 'display: none;';
+  }
   if (seatIndex === 0) {
     return 'bottom: 80px; left: calc(50% + 110px); justify-content: flex-start;';
   }
@@ -1550,13 +1629,24 @@ function normalizeState(ns){
   return ns;
 }
 
+function tableDims() {
+  // On phones we switch the table to a taller, narrower "portrait" canvas so the
+  // same content downscales far less (bigger seats/cards/text). The page scrolls,
+  // so a taller table is fine — nothing gets covered.
+  const mobile = window.innerWidth < 588;
+  return mobile ? { w: 400, h: 600, mobile: true } : { w: 560, h: 480, mobile: false };
+}
+
 function updateTableScale() {
   const container = document.querySelector('.game-table-container');
   if (container) {
+    const dims = tableDims();
     const w = container.getBoundingClientRect().width;
-    const scale = Math.min(1, w / 560);
+    const scale = Math.min(1, w / dims.w);
     container.style.setProperty('--table-scale', scale);
-    container.style.height = (480 * scale) + 'px';
+    container.style.setProperty('--table-w', dims.w + 'px');
+    container.style.setProperty('--table-h', dims.h + 'px');
+    container.style.height = (dims.h * scale) + 'px';
   }
 }
 
@@ -2256,13 +2346,14 @@ function renderGameTable() {
   const canDraw = myTurn && !localUI.stage;
   const validTargets = localUI.selectedCard != null ? computeValidTargets(localUI.selectedCard) : [];
   
+  const dims = tableDims();
   const seated = getSeatedPlayers();
   let seatsHtml = '';
   let discardsHtml = '';
-  
+
   seated.forEach((p, i) => {
-    const seatStyle = getSeatStyle(seated.length, i);
-    const discardStyle = getDiscardStyle(seated.length, i);
+    const seatStyle = getSeatStyle(seated.length, i, dims.mobile);
+    const discardStyle = getDiscardStyle(seated.length, i, dims.mobile);
     
     let cls = 'player-seat';
     if (p.id === state.currentPlayerId) cls += ' active';
@@ -2411,10 +2502,10 @@ function renderGameTable() {
   }
   
   const isDisabled = state.status !== 'playing';
-  const tableClass = `game-table${isDisabled ? ' disabled' : ''}`;
-  
-  return `<div class="game-table-container">
-    <div class="${tableClass}">
+  const tableClass = `game-table${isDisabled ? ' disabled' : ''}${dims.mobile ? ' mobile' : ''}`;
+
+  return `<div class="game-table-container${dims.mobile ? ' mobile' : ''}">
+    <div class="${tableClass}" style="width:${dims.w}px;height:${dims.h}px;">
       ${seatsHtml}
       ${discardsHtml}
       ${centerHtml}
@@ -2657,7 +2748,17 @@ async function init(){
   render();
 }
 init();
-window.addEventListener('resize', updateTableScale);
+let lastTableMobile = tableDims().mobile;
+window.addEventListener('resize', () => {
+  // Seat positions/canvas differ between the mobile (portrait) and desktop layouts,
+  // so a full re-render is needed when crossing the breakpoint; otherwise just rescale.
+  const nowMobile = tableDims().mobile;
+  if (nowMobile !== lastTableMobile) {
+    lastTableMobile = nowMobile;
+    if (state) { render(); return; }
+  }
+  updateTableScale();
+});
 </script>
 </body>
 </html>
