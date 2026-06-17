@@ -335,11 +335,17 @@
     70%{transform:scale(1.05);opacity:1;}
     100%{transform:scale(1);opacity:1;}
   }
+  .screen-flash{position:fixed;inset:0;pointer-events:none;z-index:55;animation:screenFlashAnim .7s ease-out forwards;}
+  .screen-flash.turn{background:radial-gradient(circle, rgba(232,205,126,0.4), transparent 70%);}
+  .screen-flash.eliminate{background:radial-gradient(circle, rgba(180,40,40,0.4), transparent 70%);}
+  @keyframes screenFlashAnim{0%{opacity:1;}100%{opacity:0;}}
 
   .champion-banner{
     text-align:center;font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold-light);
     padding:14px 0;text-shadow:0 2px 12px rgba(232,205,126,0.4);
   }
+  .win-reason{border:1px solid var(--gold-light);box-shadow:0 0 0 1px rgba(232,205,126,0.15) inset, 0 8px 24px rgba(0,0,0,0.4);}
+  .win-reason h2{color:var(--gold-light);}
   @media (max-width:380px){
     h1.title{font-size:27px;}
     .seal{width:100px;height:100px;}
@@ -923,6 +929,7 @@
 </head>
 <body>
 <div class="top-link" onclick="toggleRules()">規則 ‣</div>
+<div class="top-link" id="chatLink" style="top:34px;display:none;" onclick="toggleChat()">聊天室 ‣</div>
 <div class="top-link" id="leaveLink" style="left:14px;right:auto;display:none;" onclick="toggleRoomMenu()">‣ 房間選項</div>
 <div class="top-link" style="left:14px;right:auto;top:34px;" onclick="toggleSettings()">‣ 音效設定</div>
 <div id="app"></div>
@@ -961,10 +968,32 @@ function getAudioCtx(){
   }
   return audioCtx;
 }
+function unlockAudio(){
+  const ctx=getAudioCtx();
+  if(ctx && ctx.state==='suspended'){ ctx.resume().catch(()=>{}); }
+}
+document.addEventListener('click', unlockAudio, true);
+function vibrate(pattern){
+  if(!soundEnabled) return;
+  try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+}
+let originalTitle=null;
+function flashTitle(msg){
+  if(!soundEnabled) return;
+  if(!originalTitle) originalTitle=document.title;
+  try{ document.title=msg; }catch(e){}
+}
+function restoreTitle(){
+  if(originalTitle){ try{ document.title=originalTitle; }catch(e){} }
+}
+try{
+  window.addEventListener('focus', restoreTitle);
+}catch(e){}
 function beep(freq, duration, type, delay, volume){
   if(!soundEnabled) return;
   const ctx=getAudioCtx();
   if(!ctx) return;
+  if(ctx.state==='suspended'){ ctx.resume().catch(()=>{}); }
   try{
     const t0=ctx.currentTime+(delay||0);
     const osc=ctx.createOscillator();
@@ -1015,7 +1044,7 @@ function renderSettingsModal(){
     <div class="modal-box">
       <h3>音效與語音</h3>
       <div class="player-row" style="background:rgba(0,0,0,0.05);color:var(--ink);">
-        <span>音效</span>
+        <span>音效・震動・分頁提醒</span>
         <span class="btn secondary" style="padding:5px 14px;" onclick="toggleSound()">${soundEnabled?'開':'關'}</span>
       </div>
       <div class="player-row" style="background:rgba(0,0,0,0.05);color:var(--ink);margin-top:8px;">
@@ -1123,6 +1152,42 @@ let localUI={stage:null, selectedCard:null, targetId:null, guess:null};
 let rulesOpen=false;
 let roomMenuOpen=false;
 function toggleRoomMenu(){ roomMenuOpen=!roomMenuOpen; render(); }
+let chatOpen=false;
+let chatUnread=0;
+let chatDraft='';
+function toggleChat(){ chatOpen=!chatOpen; if(chatOpen) chatUnread=0; render(); }
+function onChatInput(v){ chatDraft=v; }
+async function sendChatMessage(){
+  const text=(chatDraft||'').trim();
+  if(!text || !state || !myId) return;
+  const ns=clone(state);
+  ns.chatMessages=(ns.chatMessages||[]);
+  ns.chatMessages.push({id:genId(), playerId:myId, name:myName, text:text.slice(0,300), ts:Date.now()});
+  if(ns.chatMessages.length>50) ns.chatMessages=ns.chatMessages.slice(-50);
+  chatDraft='';
+  await saveState(ns);
+}
+function renderChatModal(){
+  const msgs=(state && state.chatMessages)||[];
+  const items=msgs.map(m=>{
+    const mine=m.playerId===myId;
+    return `<div style="margin-bottom:8px;text-align:${mine?'right':'left'};">
+      <div style="font-size:11px;opacity:.6;">${escapeHtml(m.name)}</div>
+      <div style="display:inline-block;padding:6px 11px;border-radius:8px;font-size:14px;${mine?'background:var(--gold);color:#2c1c00;':'background:rgba(0,0,0,0.08);color:var(--ink);'}max-width:80%;word-break:break-word;">${escapeHtml(m.text)}</div>
+    </div>`;
+  }).join('');
+  return `<div class="modal-overlay" onclick="if(event.target===this) toggleChat()">
+    <div class="modal-box" style="display:flex;flex-direction:column;">
+      <h3>聊天室</h3>
+      <div id="chatLog" style="flex:1;overflow-y:auto;margin-bottom:10px;max-height:48vh;">${items || '<div class="hint">還沒有人說話,打個招呼吧。</div>'}</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="chatInput" oninput="onChatInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}" placeholder="輸入訊息…" maxlength="300" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:15px;font-family:'EB Garamond',serif;">
+        <div class="btn" onclick="sendChatMessage()">送出</div>
+      </div>
+      <div class="btn full secondary mt8" onclick="toggleChat()">關閉</div>
+    </div>
+  </div>`;
+}
 let notice=null; // {title, body}
 
 function showNotice(body, title){
@@ -1266,31 +1331,47 @@ function animateCardPlay(playerId, cardValue, onComplete) {
   }, 100);
 }
 
+let screenFlash=null;
+let screenFlashTimer=null;
+function triggerScreenFlash(kind){
+  screenFlash=kind;
+  clearTimeout(screenFlashTimer);
+  screenFlashTimer=setTimeout(()=>{ screenFlash=null; render(); }, 700);
+}
 function applyEventEffects(oldS, newS){
   if(!newS) return;
   if(newS.status==='playing' && newS.currentPlayerId===myId && (!oldS || oldS.currentPlayerId!==myId)){
     sfxYourTurn();
     speak('輪到你了');
+    vibrate([120,60,120]);
+    flashTitle('🔴 輪到你了 · 命運情書');
+    triggerScreenFlash('turn');
   }
   if(oldS && oldS.status!==newS.status){
     if(newS.status==='roundEnd') sfxRoundEnd();
-    if(newS.status==='gameOver') sfxWin();
+    if(newS.status==='gameOver'){ sfxWin(); vibrate([100,60,100,60,160]); }
   }
   if(oldS && oldS.players){
     newS.players.forEach(p=>{
       const old=oldS.players.find(o=>o.id===p.id);
-      if(old){
-        if(old.alive && !p.alive){
-          sfxEliminate();
-          eliminateToast={name:p.name};
-          clearTimeout(eliminateToastTimer);
-          eliminateToastTimer=setTimeout(()=>{ eliminateToast=null; render(); }, 2200);
-        }
+      if(old && old.alive && !p.alive){
+        sfxEliminate();
+        eliminateToast={name:p.name};
+        clearTimeout(eliminateToastTimer);
+        eliminateToastTimer=setTimeout(()=>{ eliminateToast=null; render(); }, 2200);
+        if(p.id===myId){ vibrate([200]); triggerScreenFlash('eliminate'); }
       }
     });
   }
   if(voiceEnabled && oldS && newS.log && newS.log.length>oldS.log.length){
     speak(newS.log[newS.log.length-1]);
+  }
+  if(oldS && newS.chatMessages && oldS.chatMessages && newS.chatMessages.length>oldS.chatMessages.length){
+    const incoming=newS.chatMessages.slice(oldS.chatMessages.length).filter(m=>m.playerId!==myId);
+    if(incoming.length>0 && !chatOpen){
+      chatUnread+=incoming.length;
+      beep(700,0.05,'sine'); beep(850,0.06,'sine',0.05);
+    }
   }
 }
 
@@ -1372,6 +1453,8 @@ function normalizeState(ns){
   ns.faceUpRemoved = ns.faceUpRemoved || [];
   ns.roundWinners = ns.roundWinners || [];
   ns.championIds = ns.championIds || [];
+  ns.roundEndReason = ns.roundEndReason || [];
+  ns.chatMessages = ns.chatMessages || [];
   ns.removedCard = (ns.removedCard===undefined) ? null : ns.removedCard;
   ns.currentPlayerId = (ns.currentPlayerId===undefined) ? null : ns.currentPlayerId;
   ns.players = (ns.players||[]).map(p=>{
@@ -1422,7 +1505,7 @@ async function doCreateRoom(){
     players:[{id,name,tokens:0,alive:true,protected:false,hand:[],discardPile:[],isBot:false}],
     hostId:id, deck:[], removedCard:null, faceUpRemoved:[],
     currentPlayerId:null, log:[], roundNumber:0, tokenGoal:0,
-    championIds:[], roundWinners:[]
+    championIds:[], roundWinners:[], chatMessages:[]
   };
   try{
     await db.ref('rooms/'+code).set(ns);
@@ -1475,10 +1558,22 @@ async function sendEmote(emoji){
   ns.lastEmote={playerId:myId, emoji, nonce:Math.random().toString(36).slice(2)+Date.now()};
   await saveState(ns);
 }
+let emoteDraft='';
+function onEmoteInput(v){ emoteDraft=v; }
+function sendCustomEmote(){
+  const text=(emoteDraft||'').trim();
+  if(!text) return;
+  emoteDraft='';
+  sendEmote(text.slice(0,20));
+}
 function renderEmoteBar(){
   return `<div class="panel"><h2>嗆人一下</h2>
     <div class="btn-row" style="flex-wrap:wrap;">
       ${EMOTES.map(e=>`<div class="pill" style="font-size:20px;padding:7px 12px;" onclick="sendEmote('${e}')">${e}</div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <input type="text" id="emoteInput" oninput="onEmoteInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendCustomEmote();}" placeholder="或自己輸入表情/文字" maxlength="20" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:15px;font-family:'EB Garamond',serif;">
+      <div class="btn secondary" onclick="sendCustomEmote()">送出</div>
     </div>
   </div>`;
 }
@@ -1497,6 +1592,43 @@ async function doRemoveBot(id){
   saveState(ns);
 }
 async function doLeaveRoom(){
+  if(state && myId && roomCode){
+    try{
+      const ns=clone(state);
+      const me=ns.players.find(p=>p.id===myId);
+      if(me){
+        ns.log=ns.log||[];
+        if(ns.status==='lobby'){
+          ns.players=ns.players.filter(p=>p.id!==myId);
+          if(ns.hostId===myId){
+            const nextHost=ns.players[0];
+            if(nextHost) ns.hostId=nextHost.id;
+          }
+          ns.log.push(`${me.name} 離開了房間。`);
+        }else{
+          me.alive=false;
+          me.left=true;
+          if(me.hand && me.hand.length){ me.discardPile=(me.discardPile||[]).concat(me.hand); me.hand=[]; }
+          ns.log.push(`${me.name} 離開了遊戲。`);
+          if(ns.hostId===myId){
+            const nextHost=ns.players.find(p=>p.id!==myId && !p.isBot) || ns.players.find(p=>p.id!==myId);
+            if(nextHost) ns.hostId=nextHost.id;
+          }
+          if(ns.status==='playing'){
+            if(ns.currentPlayerId===myId){
+              finalizeTurnOrRoundEnd(ns);
+            }else{
+              const alivePlayers=ns.players.filter(p=>p.alive);
+              if(alivePlayers.length<=1){
+                endRound(ns, alivePlayers);
+              }
+            }
+          }
+        }
+        await db.ref('rooms/'+roomCode).set(ns);
+      }
+    }catch(e){ /* best effort - still leave locally even if this fails */ }
+  }
   try{ localStorage.removeItem('loveletter_session'); }catch(e){}
   unsubscribeRoom();
   roomCode=null; myId=null; state=null;
@@ -1590,6 +1722,7 @@ function doDraw(){
   const drawn=deck.pop();
   localUI.stage={deck, drawnCard:drawn};
   sfxDraw();
+  restoreTitle();
   render();
 }
 function tempHand(){
@@ -1768,16 +1901,32 @@ function finalizeTurnOrRoundEnd(ns){
 
 function endRound(ns, aliveList){
   let winners;
+  let reasonLines=[];
   if(aliveList.length<=1){
     winners=aliveList.slice();
+    if(winners.length===1){
+      reasonLines.push(`其他玩家都已出局,${winners[0].name} 是本輪唯一存活的玩家。`);
+    }else{
+      reasonLines.push('本輪所有人都出局了。');
+    }
   }else{
     const maxVal=Math.max(...aliveList.map(p=>p.hand[0]));
     let candidates=aliveList.filter(p=>p.hand[0]===maxVal);
+    reasonLines.push(`牌堆已用盡,存活玩家亮出手牌比點數:${aliveList.map(p=>`${p.name}「${cardRoman(p.hand[0])} ${cardName(p.hand[0])}」`).join('、')}。`);
     if(candidates.length===1){
       winners=candidates;
+      reasonLines.push(`${winners[0].name} 的點數最高,贏得本輪。`);
     }else{
       const maxSum=Math.max(...candidates.map(p=>sumArr(p.discardPile)));
-      winners=candidates.filter(p=>sumArr(p.discardPile)===maxSum);
+      let finalists=candidates.filter(p=>sumArr(p.discardPile)===maxSum);
+      reasonLines.push(`${candidates.map(c=>c.name).join('、')} 點數相同,改比較棄牌堆點數總和:${candidates.map(p=>`${p.name}(${sumArr(p.discardPile)} 點)`).join('、')}。`);
+      if(finalists.length===1){
+        winners=finalists;
+        reasonLines.push(`${winners[0].name} 的棄牌堆點數總和最高,贏得本輪。`);
+      }else{
+        winners=finalists;
+        reasonLines.push(`${finalists.map(f=>f.name).join('、')} 仍然平手,共同獲得一枚信物。`);
+      }
     }
   }
   winners.forEach(w=>{
@@ -1786,6 +1935,7 @@ function endRound(ns, aliveList){
   });
   ns.status='roundEnd';
   ns.roundWinners=winners.map(w=>w.id);
+  ns.roundEndReason=reasonLines;
   ns.log.push(`本輪結束。${winners.map(w=>w.name).join('、')} 獲得一枚信物。`);
   const champs=ns.players.filter(p=>p.tokens>=ns.tokenGoal);
   if(champs.length>0){
@@ -1907,15 +2057,28 @@ function render(){
   if(rulesOpen) html+=renderRulesModal();
   if(roomMenuOpen) html+=renderRoomMenu();
   if(settingsOpen) html+=renderSettingsModal();
+  if(chatOpen) html+=renderChatModal();
   if(notice) html+=renderNoticeModal();
-  if(emoteToast) html+=`<div class="emote-toast">${escapeHtml(emoteToast.name)} <span style="font-size:20px;">${emoteToast.emoji}</span></div>`;
+  if(emoteToast) html+=`<div class="emote-toast">${escapeHtml(emoteToast.name)} <span style="font-size:20px;">${escapeHtml(emoteToast.emoji)}</span></div>`;
   if(eliminateToast) html+=`<div class="eliminate-toast">⚜ ${escapeHtml(eliminateToast.name)} 出局了 ⚜</div>`;
+  if(screenFlash) html+=`<div class="screen-flash ${screenFlash}"></div>`;
   app.innerHTML=html;
 
   const ni=document.getElementById('nameInput');
   if(ni && myName) ni.value=myName;
   const leaveLink=document.getElementById('leaveLink');
   if(leaveLink) leaveLink.style.display = roomCode ? 'block' : 'none';
+  const chatLink=document.getElementById('chatLink');
+  if(chatLink){
+    chatLink.style.display = roomCode ? 'block' : 'none';
+    chatLink.innerHTML = `聊天室 ‣${chatUnread>0?` <span style="background:var(--danger);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;">${chatUnread}</span>`:''}`;
+  }
+  const ci=document.getElementById('chatInput');
+  if(ci) ci.value=chatDraft;
+  const ei=document.getElementById('emoteInput');
+  if(ei) ei.value=emoteDraft;
+  const cl=document.getElementById('chatLog');
+  if(cl) cl.scrollTop=cl.scrollHeight;
 
   maybeRunBot();
   checkCountdownFinish();
@@ -2020,6 +2183,7 @@ function renderGameTable() {
     if (p.protected) tags += '<span class="seat-tag prot">保護</span>';
     if (p.isBot) tags += '<span class="seat-tag bot">AI</span>';
     if (p.id === state.hostId) tags += '<span class="seat-tag host">房主</span>';
+    if (p.left) tags += '<span class="seat-tag dead" style="background:#5a3a3a;color:#f0d0d0;">離開</span>';
     
     let dots = '';
     for (let t = 0; t < p.tokens; t++) {
@@ -2158,6 +2322,27 @@ function renderGameTable() {
   </div>`;
 }
 
+function renderPlayerBoard(){
+  let rows=state.players.map(p=>{
+    let cls='player-row';
+    if(p.id===state.currentPlayerId) cls+=' active';
+    if(!p.alive) cls+=' dead';
+    let tags='';
+    if(p.id===state.currentPlayerId) tags+='<span class="tag turn">行動中</span>';
+    if(p.isBot) tags+='<span class="tag prot" style="background:#3a3a55;color:#dde0ff;">AI</span>';
+    if(p.protected) tags+='<span class="tag prot">受保護</span>';
+    if(p.left) tags+='<span class="tag" style="background:#5a3a3a;color:#f0d0d0;">已離開</span>';
+    if(p.id===state.hostId) tags+='<span class="tag host">房主</span>';
+    let dots='';
+    for(let i=0;i<p.tokens;i++) dots+='<span class="token-dot"></span>';
+    return `<div class="${cls}">
+      <span>${escapeHtml(p.name)}${tags}</span>
+      <span class="tokens">${dots}</span>
+    </div>`;
+  });
+  return `<div class="panel"><h2>計分板</h2>${rows.join('')}</div>`;
+}
+
 function renderLog(){
   const items=state.log.slice(-30).reverse().map(l=>`<div>${escapeHtml(l)}</div>`).join('');
   return `<div class="panel"><h2>信箋紀事</h2><div class="log-box">${items}</div></div>`;
@@ -2259,6 +2444,14 @@ function renderMyTurn(me){
   return html;
 }
 
+function renderWinReason(){
+  if(!state.roundEndReason || state.roundEndReason.length===0) return '';
+  const lines=state.roundEndReason.map(l=>`<div style="margin-bottom:8px;">${escapeHtml(l)}</div>`).join('');
+  return `<div class="panel win-reason banner-pop">
+    <h2>勝負關鍵</h2>
+    <div style="font-size:16px;line-height:1.7;color:var(--parchment);">${lines}</div>
+  </div>`;
+}
 function renderRoundEnd(){
   const winners=state.roundWinners.map(id=>findP(id)).filter(Boolean);
   const isHost=state.hostId===myId;
@@ -2266,9 +2459,10 @@ function renderRoundEnd(){
     <h2 style="border:none;">本輪結算</h2>
     <div style="color:var(--gold-light);font-size:18px;margin-bottom:8px;">${winners.map(w=>escapeHtml(w.name)).join('、')} 獲得一枚信物</div>
   </div>`;
+  html+=renderWinReason();
   html+=`<div class="panel"><h2>各位的手牌</h2>`;
   state.players.forEach(p=>{
-    html+=`<div class="player-row"><span>${escapeHtml(p.name)}${!p.alive?'(已出局)':''}</span><span>${p.hand.length?cardRoman(p.hand[0])+' '+cardName(p.hand[0]):'—'}</span></div>`;
+    html+=`<div class="player-row"><span>${escapeHtml(p.name)}${p.left?'(已離開)':!p.alive?'(已出局)':''}</span><span>${p.hand.length?cardRoman(p.hand[0])+' '+cardName(p.hand[0]):'—'}</span></div>`;
   });
   html+=`</div>`;
   html+=renderGameTable();
@@ -2286,6 +2480,7 @@ function renderGameOver(){
   let html=`<div class="panel banner-pop">
     <div class="champion-banner">${champs.map(c=>escapeHtml(c.name)).join('、')} 贏得了這場賭局</div>
   </div>`;
+  html+=renderWinReason();
   html+=`<div class="panel"><h2>最終信物數</h2>`;
   state.players.slice().sort((a,b)=>b.tokens-a.tokens).forEach(p=>{
     let dots=''; for(let i=0;i<p.tokens;i++) dots+='<span class="token-dot"></span>';
