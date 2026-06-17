@@ -39,7 +39,7 @@
     padding:18px 12px 60px;
   }
   .display{font-family:'Cormorant Garamond','Noto Serif TC',serif;}
-  #app{width:100%;max-width:560px;}
+  #app{width:100%;max-width:680px;}
 
   .glow-wrap{position:relative;text-align:center;margin-bottom:18px;padding-top:6px;}
   .glow{
@@ -316,11 +316,11 @@
   #chatLink { right: 58px; }
   #rulesLink { right: 14px; }
 
-  @media (min-width: 588px) {
-    #leaveLink { left: calc(50% - 280px + 14px); }
-    #settingsLink { left: calc(50% - 280px + 58px); }
-    #chatLink { right: calc(50% - 280px + 58px); }
-    #rulesLink { right: calc(50% - 280px + 14px); }
+  @media (min-width: 708px) {
+    #leaveLink { left: calc(50% - 340px + 14px); }
+    #settingsLink { left: calc(50% - 340px + 58px); }
+    #chatLink { right: calc(50% - 340px + 58px); }
+    #rulesLink { right: calc(50% - 340px + 14px); }
   }
 
   .top-btn:hover {
@@ -1342,7 +1342,8 @@ function renderChatModal(){
       <h3>聊天室</h3>
       <div id="chatLog" style="flex:1;overflow-y:auto;margin-bottom:10px;max-height:48vh;">${items || '<div class="hint">還沒有人說話,打個招呼吧。</div>'}</div>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="chatInput" oninput="onChatInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}" placeholder="輸入訊息…" maxlength="300" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
+        <input type="text" id="chatInput" oninput="onChatInput(this.value)" onkeydown="if(event.key==='Enter' && !event.isComposing){event.preventDefault();sendChatMessage();}" placeholder="輸入訊息…" maxlength="300" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
+
         <div class="btn" onclick="sendChatMessage()">送出</div>
       </div>
       <div class="btn full secondary mt8" onclick="toggleChat()">關閉</div>
@@ -1642,7 +1643,9 @@ function updateTableScale() {
   if (container) {
     const dims = tableDims();
     const w = container.getBoundingClientRect().width;
-    const scale = Math.min(1, w / dims.w);
+    // Phones never upscale past the portrait design; desktop is allowed to grow
+    // with the (now wider) column so the table fills the extra space.
+    const scale = dims.mobile ? Math.min(1, w / dims.w) : Math.min(1.35, w / dims.w);
     container.style.setProperty('--table-scale', scale);
     container.style.setProperty('--table-w', dims.w + 'px');
     container.style.setProperty('--table-h', dims.h + 'px');
@@ -1757,7 +1760,7 @@ function renderEmoteBar(){
       ${EMOTES.map(e=>`<div class="pill" style="font-size:20px;padding:7px 12px;" onclick="sendEmote('${e}')">${e}</div>`).join('')}
     </div>
     <div style="display:flex;gap:8px;margin-top:10px;">
-      <input type="text" id="emoteInput" oninput="onEmoteInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendCustomEmote();}" placeholder="或自己輸入表情/文字" maxlength="20" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
+      <input type="text" id="emoteInput" oninput="onEmoteInput(this.value)" onkeydown="if(event.key==='Enter' && !event.isComposing){event.preventDefault();sendCustomEmote();}" placeholder="或自己輸入表情/文字" maxlength="20" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
       <div class="btn secondary" onclick="sendCustomEmote()">送出</div>
     </div>
   </div>`;
@@ -1873,6 +1876,12 @@ function checkBaronReveal(){
   const r=state.lastReveal;
   if(r.nonce===lastSeenRevealNonce) return;
   lastSeenRevealNonce=r.nonce;
+  if(r.type==='priest'){
+    if(myId!==r.aId) return; // only the player who peeked sees the card
+    const opp=findP(r.bId);
+    showNotice(`你偷看到 ${opp?opp.name:'對方'} 的手牌是:「${cardRoman(r.bVal)} ${cardName(r.bVal)}」`, '神父 · 偷看手牌');
+    return;
+  }
   if(myId!==r.aId && myId!==r.bId) return; // not one of the two players involved, no peek
   const meIsA=myId===r.aId;
   const myVal=meIsA?r.aVal:r.bVal;
@@ -1963,7 +1972,7 @@ function confirmPlay(){
   me.discardPile.push(card);
   ns.log.push(`${me.name} 出了「${cardName(card)}」。`);
 
-  resolveEffect(ns, me, card, localUI.targetId, localUI.guess, true);
+  resolveEffect(ns, me, card, localUI.targetId, localUI.guess);
   finalizeTurnOrRoundEnd(ns);
   localUI={stage:null,selectedCard:null,targetId:null,guess:null};
   sfxPlay();
@@ -1973,7 +1982,7 @@ function confirmPlay(){
 /* Shared effect resolver used by both human plays and bot turns.
    `actor` must already have had the played card removed from hand
    (and pushed to discardPile) before this is called. */
-function resolveEffect(ns, actor, card, tId, guess, isHumanReveal){
+function resolveEffect(ns, actor, card, tId, guess){
   switch(card){
     case 1:{
       const t = tId!=null ? ns.players.find(p=>p.id===tId) : null;
@@ -1993,9 +2002,9 @@ function resolveEffect(ns, actor, card, tId, guess, isHumanReveal){
       const t = tId!=null ? ns.players.find(p=>p.id===tId) : null;
       if(t){
         ns.log.push(`${actor.name} 偷看了 ${t.name} 的手牌。`);
-        if(isHumanReveal){
-          showNotice(`你偷看到 ${t.name} 的手牌是:「${cardRoman(t.hand[0])} ${cardName(t.hand[0])}」`, '神父 · 偷看手牌');
-        }
+        // Mirror the baron flow: stash the peek in state so the reveal is shown
+        // after the card-play animation finishes (see checkBaronReveal), not before.
+        ns.lastReveal={type:'priest', aId:actor.id, bId:t.id, bVal:t.hand[0], nonce:Math.random().toString(36).slice(2)+Date.now()};
       }else{
         ns.log.push('沒有可指定的目標,神父效果無效。');
       }
@@ -2192,7 +2201,7 @@ function runBotTurn(){
     }
   }
 
-  resolveEffect(ns, bot, card, tId, guess, false);
+  resolveEffect(ns, bot, card, tId, guess);
   finalizeTurnOrRoundEnd(ns);
   saveState(ns);
 }
@@ -2211,8 +2220,26 @@ function renderNoticeModal(){
 }
 
 /* ---------------- Render ---------------- */
+/* While the user is mid-IME-composition (e.g. typing Chinese), rebuilding the
+   #app DOM would destroy the <input> and abort the composition. Defer any render
+   requested during composition and flush it once the composition ends, so toasts
+   and remote state updates can't interrupt typing in the chat / emote fields. */
+let isComposing=false;
+let pendingRender=false;
+document.addEventListener('compositionstart', ()=>{ isComposing=true; }, true);
+document.addEventListener('compositionend', ()=>{
+  isComposing=false;
+  if(pendingRender){ pendingRender=false; render(); }
+}, true);
+
 function render(){
+  if(isComposing){ pendingRender=true; return; }
   const app=document.getElementById('app');
+  // Remember which field is focused (and the caret position) so a re-render
+  // triggered by a notification bubble doesn't kick the user out of typing.
+  const _act=document.activeElement;
+  const _focus=(_act && _act.id && (_act.tagName==='INPUT'||_act.tagName==='TEXTAREA'))
+    ? {id:_act.id, start:_act.selectionStart, end:_act.selectionEnd} : null;
   let html='';
   html+=`<div class="glow-wrap"><div class="glow"></div><h1 class="title display">命運情書</h1><div class="subtitle">Love Letter · 與朋友共寫的賭局</div></div>`;
 
@@ -2270,6 +2297,15 @@ function render(){
   if(ei) ei.value=emoteDraft;
   const cl=document.getElementById('chatLog');
   if(cl) cl.scrollTop=cl.scrollHeight;
+
+  // Re-focus the field the user was typing in and restore their caret position.
+  if(_focus){
+    const el=document.getElementById(_focus.id);
+    if(el){
+      el.focus({preventScroll:true});
+      if(_focus.start!=null){ try{ el.setSelectionRange(_focus.start, _focus.end); }catch(e){} }
+    }
+  }
 
   maybeRunBot();
   checkCountdownFinish();
