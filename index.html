@@ -127,6 +127,10 @@
     padding:9px 10px;border-radius:6px;margin-bottom:6px;
     background:rgba(0,0,0,0.18);border:1px solid rgba(201,164,80,0.18);
     font-size:14px;
+    gap:8px;
+  }
+  .player-row > span:first-child {
+    display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0;
   }
   .player-row.active{border-color:var(--gold-light);background:rgba(201,164,80,0.16);}
   .player-row.dead{opacity:0.45;text-decoration:line-through;}
@@ -307,6 +311,18 @@
     transition: all 0.2s ease;
     box-shadow: 0 3px 8px rgba(0,0,0,0.5);
   }
+  #leaveLink { left: 14px; }
+  #settingsLink { left: 58px; }
+  #chatLink { right: 58px; }
+  #rulesLink { right: 14px; }
+
+  @media (min-width: 588px) {
+    #leaveLink { left: calc(50% - 280px + 14px); }
+    #settingsLink { left: calc(50% - 280px + 58px); }
+    #chatLink { right: calc(50% - 280px + 58px); }
+    #rulesLink { right: calc(50% - 280px + 14px); }
+  }
+
   .top-btn:hover {
     color: var(--gold-light);
     border-color: var(--gold);
@@ -385,21 +401,32 @@
   }
   .win-reason{border:1px solid var(--gold-light);box-shadow:0 0 0 1px rgba(232,205,126,0.15) inset, 0 8px 24px rgba(0,0,0,0.4);}
   .win-reason h2{color:var(--gold-light);}
-  @media (max-width:380px){
-    h1.title{font-size:27px;}
+  @media (max-width:440px){
+    h1.title{font-size:25px;}
+    .subtitle{font-size:11px; margin-top:2px;}
     .seal{width:100px;height:100px;}
   }
 
   /* Game Table Layout */
-  .game-table {
-    position: relative;
+  .game-table-container {
     width: 100%;
+    aspect-ratio: 560 / 480;
+    position: relative;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .game-table {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 560px;
     height: 480px;
+    transform: translate(-50%, -50%) scale(var(--table-scale, 1));
+    transform-origin: center center;
     background: radial-gradient(circle at 50% 50%, #4a0e17 0%, #1e0307 100%);
     border: 3px double var(--gold);
     border-radius: 20px;
     box-shadow: inset 0 0 40px rgba(0,0,0,0.85), 0 8px 24px rgba(0,0,0,0.6);
-    margin-bottom: 14px;
     overflow: hidden;
     user-select: none;
   }
@@ -967,22 +994,22 @@
 </style>
 </head>
 <body>
-<div class="top-btn" onclick="toggleRules()" style="right:14px;" title="規則說明">
+<div class="top-btn" id="rulesLink" onclick="toggleRules()" title="規則說明">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
     <path d="M12 3c-1.2 0-2.4.4-3.4 1-1.3.8-2.6 1-3.6.8-.5-.1-1 .3-1 .8v12.2c0 .4.3.8.7.9.8.1 1.9 0 3-.6.8-.5 1.7-.8 2.7-.8 1 0 2 .3 2.8.8.8-.5 1.8-.8 2.8-.8.9 0 1.8.3 2.6.8 1.2.6 2.3.7 3.1.6.4-.1.7-.4.7-.9V4.8c0-.5-.5-.9-1-.8-1 .2-2.3 0-3.6-.8-1-.6-2.2-1-3.4-1zm-1 2.5v11c-.7-.3-1.6-.5-2.5-.5-.9 0-1.9.2-2.5.6V6.1c.5-.3 1.2-.5 2-.5 1 0 2 .2 3 .9zm10 .6v11c-.6-.4-1.6-.6-2.5-.6-.9 0-1.8.2-2.5.5v-11c1 .7 2 .9 3 .9.8 0 1.5-.2 2-.3z"/>
   </svg>
 </div>
-<div class="top-btn" id="chatLink" style="right:58px;display:none;" onclick="toggleChat()" title="聊天室">
+<div class="top-btn" id="chatLink" style="display:none;" onclick="toggleChat()" title="聊天室">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
     <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm0-3h12v2H6V6zm0 6h9v2H6v-2z"/>
   </svg>
 </div>
-<div class="top-btn" id="leaveLink" style="left:14px;display:none;" onclick="toggleRoomMenu()" title="房間選項">
+<div class="top-btn" id="leaveLink" style="display:none;" onclick="toggleRoomMenu()" title="房間選項">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
     <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
   </svg>
 </div>
-<div class="top-btn" onclick="toggleSettings()" style="left:58px;" title="音效設定">
+<div class="top-btn" id="settingsLink" onclick="toggleSettings()" title="音效設定">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
     <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
   </svg>
@@ -1236,7 +1263,7 @@ function renderChatModal(){
       <h3>聊天室</h3>
       <div id="chatLog" style="flex:1;overflow-y:auto;margin-bottom:10px;max-height:48vh;">${items || '<div class="hint">還沒有人說話,打個招呼吧。</div>'}</div>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="chatInput" oninput="onChatInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}" placeholder="輸入訊息…" maxlength="300" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:15px;font-family:'EB Garamond',serif;">
+        <input type="text" id="chatInput" oninput="onChatInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}" placeholder="輸入訊息…" maxlength="300" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
         <div class="btn" onclick="sendChatMessage()">送出</div>
       </div>
       <div class="btn full secondary mt8" onclick="toggleChat()">關閉</div>
@@ -1332,6 +1359,9 @@ function animateCardPlay(playerId, cardValue, onComplete) {
     
     document.body.appendChild(animCard);
     
+    const container = document.querySelector('.game-table-container');
+    const tableScale = container ? parseFloat(container.style.getPropertyValue('--table-scale')) || 1 : 1;
+    
     const seatRect = seatEl.getBoundingClientRect();
     const tableRect = tableEl.getBoundingClientRect();
     
@@ -1340,7 +1370,7 @@ function animateCardPlay(playerId, cardValue, onComplete) {
     
     animCard.style.left = startX + 'px';
     animCard.style.top = startY + 'px';
-    animCard.style.transform = 'scale(0.1)';
+    animCard.style.transform = 'scale(' + (0.1 * tableScale) + ')';
     animCard.style.opacity = '0';
     
     animCard.offsetHeight; // force reflow
@@ -1350,7 +1380,7 @@ function animateCardPlay(playerId, cardValue, onComplete) {
     
     animCard.style.left = centerX + 'px';
     animCard.style.top = centerY + 'px';
-    animCard.style.transform = 'scale(1.5)';
+    animCard.style.transform = 'scale(' + (1.5 * tableScale) + ')';
     animCard.style.opacity = '1';
     
     setTimeout(() => {
@@ -1370,7 +1400,7 @@ function animateCardPlay(playerId, cardValue, onComplete) {
       animCard.style.transition = 'all 0.6s cubic-bezier(0.5, 0, 0.75, 0)';
       animCard.style.left = targetX + 'px';
       animCard.style.top = targetY + 'px';
-      animCard.style.transform = 'scale(0.13)';
+      animCard.style.transform = 'scale(' + (0.13 * tableScale) + ')';
       animCard.style.opacity = '0.3';
       
       setTimeout(() => {
@@ -1520,6 +1550,16 @@ function normalizeState(ns){
   return ns;
 }
 
+function updateTableScale() {
+  const container = document.querySelector('.game-table-container');
+  if (container) {
+    const w = container.getBoundingClientRect().width;
+    const scale = Math.min(1, w / 560);
+    container.style.setProperty('--table-scale', scale);
+    container.style.height = (480 * scale) + 'px';
+  }
+}
+
 function subscribeRoom(code){
   if(roomRef) roomRef.off();
   roomRef=db.ref('rooms/'+code);
@@ -1627,7 +1667,7 @@ function renderEmoteBar(){
       ${EMOTES.map(e=>`<div class="pill" style="font-size:20px;padding:7px 12px;" onclick="sendEmote('${e}')">${e}</div>`).join('')}
     </div>
     <div style="display:flex;gap:8px;margin-top:10px;">
-      <input type="text" id="emoteInput" oninput="onEmoteInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendCustomEmote();}" placeholder="或自己輸入表情/文字" maxlength="20" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:15px;font-family:'EB Garamond',serif;">
+      <input type="text" id="emoteInput" oninput="onEmoteInput(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();sendCustomEmote();}" placeholder="或自己輸入表情/文字" maxlength="20" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
       <div class="btn secondary" onclick="sendCustomEmote()">送出</div>
     </div>
   </div>`;
@@ -2118,6 +2158,7 @@ function render(){
   if(eliminateToast) html+=`<div class="eliminate-toast">⚜ ${escapeHtml(eliminateToast.name)} 出局了 ⚜</div>`;
   if(screenFlash) html+=`<div class="screen-flash ${screenFlash}"></div>`;
   app.innerHTML=html;
+  updateTableScale();
 
   const ni=document.getElementById('nameInput');
   if(ni && myName) ni.value=myName;
@@ -2372,13 +2413,15 @@ function renderGameTable() {
   const isDisabled = state.status !== 'playing';
   const tableClass = `game-table${isDisabled ? ' disabled' : ''}`;
   
-  return `<div class="${tableClass}">
-    ${seatsHtml}
-    ${discardsHtml}
-    ${centerHtml}
-    ${myHandHtml}
-    ${guessOverlayHtml}
-    ${tableActionHtml}
+  return `<div class="game-table-container">
+    <div class="${tableClass}">
+      ${seatsHtml}
+      ${discardsHtml}
+      ${centerHtml}
+      ${myHandHtml}
+      ${guessOverlayHtml}
+      ${tableActionHtml}
+    </div>
   </div>`;
 }
 
@@ -2614,6 +2657,7 @@ async function init(){
   render();
 }
 init();
+window.addEventListener('resize', updateTableScale);
 </script>
 </body>
 </html>
