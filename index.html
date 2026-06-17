@@ -137,31 +137,108 @@
   .tokens{display:flex;gap:3px;}
   .token-dot{width:9px;height:9px;border-radius:50%;background:var(--gold-light);box-shadow:0 0 3px rgba(232,205,126,0.7);}
 
-  .card{
-    position:relative;
-    background:
-      repeating-linear-gradient(0deg, rgba(0,0,0,0.015) 0 2px, transparent 2px 4px),
-      radial-gradient(circle at 20% 15%, rgba(255,255,255,0.5), transparent 40%),
-      var(--parchment);
-    color:var(--ink);
-    border-radius:8px;border:1px solid var(--gold-deep);
-    padding:14px 12px 10px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.35);
-    cursor:pointer;
-    transition:transform .15s ease, box-shadow .15s ease;
+  .card {
+    position: relative;
+    background: linear-gradient(135deg, var(--parchment), var(--parchment-dark));
+    color: var(--ink);
+    border-radius: 10px;
+    border: 2px solid var(--gold-deep);
+    padding: 10px 10px 8px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.45);
+    cursor: pointer;
+    transition: transform .2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow .2s ease, outline .2s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-width: 220px;
+    width: 100%;
   }
-  .card:hover{transform:translateY(-3px);}
-  .card.selected{outline:3px solid var(--gold-light);transform:translateY(-4px);}
-  .card.locked{cursor:not-allowed;opacity:0.5;}
-  .card-icon{width:100%;display:flex;justify-content:center;margin-bottom:6px;color:var(--wine);}
-  .card-icon svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;}
-  .card-icon.small{width:auto;margin-bottom:0;}
-  .card-icon.small svg{width:26px;height:26px;stroke-width:2.8;}
-  .card .roman{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--gold-deep);}
-  .card .cname{font-family:'Noto Serif TC',serif;font-weight:700;font-size:16px;margin:2px 0 4px;}
-  .card .cdesc{font-size:12px;font-style:italic;color:var(--ink-soft);line-height:1.4;}
-  .cards-row{display:flex;gap:10px;}
-  .cards-row .card{flex:1;}
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.55), 0 0 10px rgba(201,164,80,0.3);
+  }
+  .card.selected {
+    outline: 3px solid var(--gold-light);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.6), 0 0 15px var(--gold-light);
+    transform: translateY(-8px);
+  }
+  .card.locked {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+  .card-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 28%, var(--gold-light), var(--gold) 55%, var(--gold-deep) 100%);
+    border: 1px solid #4a3408;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #3a2300;
+    z-index: 10;
+  }
+  .card-portrait-wrap {
+    width: 100%;
+    height: 125px;
+    border-radius: 6px;
+    border: 1px solid var(--gold-deep);
+    overflow: hidden;
+    margin-bottom: 8px;
+    position: relative;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.4);
+    background: var(--bg-deeper);
+  }
+  .card-portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .card:hover .card-portrait {
+    transform: scale(1.06);
+  }
+  .card-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  .card .cname {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    margin: 0 0 4px;
+    border-bottom: 1px solid rgba(138, 99, 21, 0.25);
+    padding-bottom: 2px;
+  }
+  .card .cdesc {
+    font-family: 'EB Garamond', 'Noto Serif TC', serif;
+    font-size: 11px;
+    font-style: normal;
+    color: var(--ink-soft);
+    line-height: 1.3;
+    text-align: justify;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+  }
+  .cards-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .cards-row .card {
+    flex: 1;
+  }
 
   .small-card{
     display:inline-flex;align-items:center;justify-content:center;
@@ -266,6 +343,581 @@
   @media (max-width:380px){
     h1.title{font-size:27px;}
     .seal{width:100px;height:100px;}
+  }
+
+  /* Game Table Layout */
+  .game-table {
+    position: relative;
+    width: 100%;
+    height: 480px;
+    background: radial-gradient(circle at 50% 50%, #4a0e17 0%, #1e0307 100%);
+    border: 3px double var(--gold);
+    border-radius: 20px;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.85), 0 8px 24px rgba(0,0,0,0.6);
+    margin-bottom: 14px;
+    overflow: hidden;
+    user-select: none;
+  }
+  .game-table.disabled {
+    pointer-events: none;
+    opacity: 0.65;
+    filter: grayscale(0.25) contrast(0.95);
+    transition: opacity 0.3s ease, filter 0.3s ease;
+  }
+  .player-seat {
+    position: absolute;
+    width: 105px;
+    background: rgba(26, 5, 9, 0.88);
+    border: 1px solid rgba(201, 164, 80, 0.4);
+    border-radius: 8px;
+    padding: 6px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    z-index: 5;
+    transition: all 0.3s ease;
+  }
+  .player-seat.active {
+    border-color: var(--gold-light);
+    box-shadow: 0 0 12px rgba(232, 205, 126, 0.45), 0 4px 10px rgba(0,0,0,0.6);
+    animation: seatPulse 1.8s ease-in-out infinite;
+  }
+  .player-seat.dead {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+    text-decoration: line-through;
+  }
+  .player-seat.protected {
+    border-color: #355c3a;
+    box-shadow: 0 0 14px rgba(53, 92, 58, 0.75), 0 4px 10px rgba(0,0,0,0.6);
+    animation: protectPulse 2s ease-in-out infinite;
+  }
+  @keyframes protectPulse {
+    0%, 100% {
+      border-color: rgba(53, 92, 58, 0.5);
+      box-shadow: 0 0 8px rgba(53, 92, 58, 0.4), 0 4px 10px rgba(0,0,0,0.6);
+    }
+    50% {
+      border-color: #5bb367;
+      box-shadow: 0 0 18px rgba(91, 179, 103, 0.85), 0 4px 10px rgba(0,0,0,0.6);
+    }
+  }
+  @keyframes seatPulse {
+    0%, 100% { border-color: rgba(201, 164, 80, 0.4); }
+    50% { border-color: var(--gold-light); }
+  }
+  .seat-name {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--parchment);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+  .player-seat.active .seat-name {
+    color: var(--gold-light);
+  }
+  .seat-tags {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .seat-tag {
+    font-size: 8px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    line-height: 1.1;
+  }
+  .seat-tag.turn { background: var(--gold); color: #2c1c00; font-weight: 700; }
+  .seat-tag.prot { background: #355c3a; color: #dfffe6; }
+  .seat-tag.host { background: #3a3a55; color: #dde0ff; }
+  .seat-tag.bot { background: #553a4e; color: #ffddee; }
+  .seat-tokens-hand {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    color: var(--parchment-dark);
+    border-top: 1px dashed rgba(201, 164, 80, 0.2);
+    padding-top: 4px;
+    margin-top: 4px;
+  }
+  .seat-hand-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .seat-hand-card-icon {
+    width: 8px;
+    height: 11px;
+    background: var(--gold-deep);
+    border: 1px solid var(--gold-light);
+    border-radius: 1px;
+    display: inline-block;
+  }
+  
+  /* Discards on the Table */
+  .table-discards-wrap {
+    position: absolute;
+    display: flex;
+    gap: 2.5px;
+    z-index: 4;
+    max-width: 160px;
+    flex-wrap: wrap;
+  }
+  .table-discard-card {
+    width: 17px;
+    height: 23px;
+    background: var(--parchment-dark);
+    color: var(--ink);
+    border: 1px solid var(--gold-deep);
+    border-radius: 2px;
+    font-size: 9px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  
+  /* Table Center */
+  .table-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 3;
+  }
+  .center-piles {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .draw-pile-deck {
+    position: relative;
+    width: 58px;
+    height: 80px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, var(--wine-light), var(--wine));
+    border: 2px solid var(--gold);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-light);
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .draw-pile-deck::before {
+    content: '';
+    position: absolute;
+    inset: -3px 3px 3px -3px;
+    background: var(--wine);
+    border: 2px solid var(--gold-deep);
+    border-radius: 5px;
+    z-index: -1;
+    box-shadow: -2px 2px 4px rgba(0,0,0,0.3);
+  }
+  .draw-pile-deck::after {
+    content: '';
+    position: absolute;
+    inset: -6px 6px 6px -6px;
+    background: var(--bg-deeper);
+    border: 2px solid rgba(201, 164, 80, 0.3);
+    border-radius: 5px;
+    z-index: -2;
+    box-shadow: -4px 4px 6px rgba(0,0,0,0.2);
+  }
+  .center-deck-count {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--gold-light);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .center-faceup-piles {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .center-faceup-card {
+    width: 28px;
+    height: 38px;
+    background: var(--parchment-dark);
+    color: var(--ink);
+    border: 1px solid var(--gold-deep);
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  }
+
+  /* Animating Floating Card Overlay */
+  .animating-card-overlay {
+    position: fixed;
+    z-index: 100;
+    pointer-events: none;
+    transition: all 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+    transform-origin: center center;
+  }
+  
+  .animating-card-content {
+    background: linear-gradient(135deg, var(--parchment), var(--parchment-dark));
+    color: var(--ink);
+    border-radius: 8px;
+    border: 2px solid var(--gold-deep);
+    padding: 8px 8px 6px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    width: 130px;
+    height: 180px;
+    overflow: hidden;
+  }
+  
+  .animating-card-content .card-badge {
+    width: 24px;
+    height: 24px;
+    font-size: 13px;
+    top: 4px;
+    left: 4px;
+  }
+  .animating-card-content .card-portrait-wrap {
+    height: 100px;
+    margin-bottom: 6px;
+  }
+  .animating-card-content .cname {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .animating-card-content .cdesc {
+    font-size: 9px;
+    line-height: 1.25;
+  }
+
+  /* Interactive Deck & Table Hand Cards */
+  .draw-pile-deck.interactive {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .draw-pile-deck.interactive:hover {
+    transform: scale(1.06) translateZ(0);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.6), 0 0 10px rgba(201,164,80,0.4);
+  }
+  .draw-pile-deck.interactive:active {
+    transform: scale(0.96);
+  }
+  .glow-deck {
+    animation: deckGlowPulse 1.6s infinite alternate ease-in-out;
+    border-color: var(--gold-light) !important;
+  }
+  @keyframes deckGlowPulse {
+    0% {
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5), 0 0 4px rgba(232, 205, 126, 0.3);
+    }
+    100% {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6), 0 0 16px rgba(232, 205, 126, 0.7);
+    }
+  }
+
+  .table-my-hand {
+    position: absolute;
+    bottom: 75px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+    pointer-events: auto;
+  }
+
+  .table-hand-card {
+    position: relative;
+    background: linear-gradient(135deg, var(--parchment), var(--parchment-dark));
+    color: var(--ink);
+    border-radius: 6px;
+    border: 1.5px solid var(--gold-deep);
+    padding: 6px 6px 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, outline 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    width: 82px;
+    height: 114px;
+    overflow: hidden;
+  }
+  .table-hand-card:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.6), 0 0 8px rgba(201,164,80,0.3);
+  }
+  .table-hand-card.selected {
+    outline: 2.5px solid var(--gold-light);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.65), 0 0 12px var(--gold-light);
+    transform: translateY(-6px) scale(1.05);
+  }
+  .table-hand-card.locked {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  .table-hand-card .card-badge {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 28%, var(--gold-light), var(--gold) 55%, var(--gold-deep) 100%);
+    border: 1px solid #4a3408;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: #3a2300;
+    z-index: 10;
+  }
+  .table-hand-card .card-portrait-wrap {
+    width: 100%;
+    height: 62px;
+    border-radius: 4px;
+    border: 1px solid var(--gold-deep);
+    overflow: hidden;
+    margin-bottom: 4px;
+    position: relative;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.4);
+    background: var(--bg-deeper);
+  }
+  .table-hand-card .card-portrait {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .table-hand-card .card-info {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  .table-hand-card .cname {
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--ink);
+    margin: 0 0 2px;
+    border-bottom: 1px solid rgba(138, 99, 21, 0.2);
+    padding-bottom: 1px;
+  }
+  .table-hand-card .cdesc {
+    font-family: 'EB Garamond', 'Noto Serif TC', serif;
+    font-size: 8px;
+    color: var(--ink-soft);
+    line-height: 1.15;
+    text-align: justify;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .player-seat.targetable {
+    cursor: pointer;
+    border-color: rgba(201, 164, 80, 0.75);
+    box-shadow: 0 0 8px rgba(201, 164, 80, 0.4);
+  }
+  .player-seat.targetable:hover {
+    transform: scale(1.05);
+    border-color: var(--gold-light);
+    box-shadow: 0 0 16px rgba(232, 205, 126, 0.7), 0 4px 10px rgba(0,0,0,0.6);
+  }
+  .player-seat.target-selected {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 20px #ffd700, 0 4px 10px rgba(0,0,0,0.6) !important;
+    background: rgba(92, 19, 32, 0.94) !important;
+  }
+  
+  .table-action-row {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    z-index: 20;
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  .table-btn {
+    display: inline-block;
+    cursor: pointer;
+    border: 1px solid var(--gold-deep);
+    background: linear-gradient(180deg, var(--parchment-dark), var(--parchment));
+    color: var(--ink);
+    font-family: 'Noto Serif TC', serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    padding: 8px 14px;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+    transition: transform .12s ease, box-shadow .12s ease;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .table-btn:active {
+    transform: scale(0.96);
+  }
+  .table-btn.secondary {
+    background: rgba(26, 5, 9, 0.85);
+    color: var(--parchment-dark);
+    border-color: rgba(201, 164, 80, 0.4);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  }
+  .table-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Guard Guess Overlay on Table */
+  @keyframes tableGuessPop {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -46%) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+  .table-guess-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(20, 4, 7, 0.95);
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.85);
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(100% - 40px);
+    max-width: 440px;
+    pointer-events: auto;
+    animation: tableGuessPop 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .table-guess-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold-light);
+    margin-bottom: 12px;
+    font-family: 'Noto Serif TC', serif;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  }
+  .table-guess-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .table-guess-btn {
+    background: rgba(243, 230, 200, 0.08);
+    border: 1px solid rgba(201, 164, 80, 0.4);
+    border-radius: 6px;
+    color: var(--parchment);
+    padding: 8px 10px;
+    min-width: 80px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .table-guess-btn .guess-roman {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .table-guess-btn .guess-name {
+    font-size: 11px;
+    color: var(--parchment-dark);
+  }
+  .table-guess-btn:hover {
+    background: rgba(243, 230, 200, 0.15);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .table-guess-btn.selected {
+    background: linear-gradient(135deg, var(--gold-deep), var(--gold));
+    border-color: var(--gold-light);
+    box-shadow: 0 0 10px rgba(232, 205, 126, 0.5);
+  }
+  .table-guess-btn.selected .guess-roman,
+  .table-guess-btn.selected .guess-name {
+    color: #2c1c00;
+  }
+  
+  /* Deck Click Tip Tooltip */
+  .deck-click-tip {
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(232, 205, 126, 0.95);
+    color: #2c1c00;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    animation: bounceUpDown 1.2s infinite ease-in-out;
+    pointer-events: none;
+    border: 1px solid var(--gold-deep);
+    font-family: 'Noto Serif TC', serif;
+    z-index: 10;
+  }
+  .deck-click-tip::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px 4px 0;
+    border-style: solid;
+    border-color: rgba(232, 205, 126, 0.95) transparent;
+    display: block;
+    width: 0;
+  }
+  @keyframes bounceUpDown {
+    0%, 100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-5px);
+    }
   }
 </style>
 </head>
@@ -404,6 +1056,66 @@ const CARD_ICONS = {
 };
 function cardIcon(v){ return CARD_ICONS[v] || ''; }
 
+const CARD_IMAGES = {
+  1: './images/cards/card_1_guard.png',
+  2: './images/cards/card_2_priest.png',
+  3: './images/cards/card_3_baron.png',
+  4: './images/cards/card_4_handmaid.png',
+  5: './images/cards/card_5_prince.png',
+  6: './images/cards/card_6_king.png',
+  7: './images/cards/card_7_countess.png',
+  8: './images/cards/card_8_princess.png'
+};
+function cardImage(v){ return CARD_IMAGES[v] || ''; }
+
+/* ---------------- Table Seating Helpers ---------------- */
+function getSeatedPlayers() {
+  if (!state || !state.players) return [];
+  const players = state.players;
+  let meIdx = players.findIndex(p => p.id === myId);
+  if (meIdx === -1) meIdx = 0;
+  
+  const rotated = [];
+  for (let i = 0; i < players.length; i++) {
+    rotated.push(players[(meIdx + i) % players.length]);
+  }
+  return rotated;
+}
+
+function getSeatStyle(numPlayers, seatIndex) {
+  if (seatIndex === 0) {
+    return 'bottom: 12px; left: 50%; transform: translateX(-50%);';
+  }
+  if (numPlayers === 2) {
+    if (seatIndex === 1) return 'top: 12px; left: 50%; transform: translateX(-50%);';
+  } else if (numPlayers === 3) {
+    if (seatIndex === 1) return 'top: 25px; left: 20%; transform: translateX(-50%);';
+    if (seatIndex === 2) return 'top: 25px; right: 20%; transform: translateX(50%);';
+  } else if (numPlayers === 4) {
+    if (seatIndex === 1) return 'top: 45%; left: 12px; transform: translateY(-50%);';
+    if (seatIndex === 2) return 'top: 12px; left: 50%; transform: translateX(-50%);';
+    if (seatIndex === 3) return 'top: 45%; right: 12px; transform: translateY(-50%);';
+  }
+  return 'top: 0; left: 0;';
+}
+
+function getDiscardStyle(numPlayers, seatIndex) {
+  if (seatIndex === 0) {
+    return 'bottom: 80px; left: calc(50% + 110px); justify-content: flex-start;';
+  }
+  if (numPlayers === 2) {
+    if (seatIndex === 1) return 'top: 110px; left: 50%; transform: translateX(-50%); justify-content: center;';
+  } else if (numPlayers === 3) {
+    if (seatIndex === 1) return 'top: 120px; left: 28%; transform: translateX(-50%);';
+    if (seatIndex === 2) return 'top: 120px; right: 28%; transform: translateX(50%);';
+  } else if (numPlayers === 4) {
+    if (seatIndex === 1) return 'top: 45%; left: 130px; transform: translateY(-50%); flex-direction: row;';
+    if (seatIndex === 2) return 'top: 110px; left: 50%; transform: translateX(-50%); justify-content: center;';
+    if (seatIndex === 3) return 'top: 45%; right: 130px; transform: translateY(-50%); flex-direction: row-reverse;';
+  }
+  return 'display: none;';
+}
+
 /* ---------------- Global session ---------------- */
 let roomCode=null, myId=null, myName='';
 let state=null;
@@ -469,6 +1181,91 @@ function startRound(st){
 let roomRef=null;
 let eliminateToast=null;
 let eliminateToastTimer=null;
+const activeAnimations = {};
+
+function animateCardPlay(playerId, cardValue, onComplete) {
+  activeAnimations[playerId] = true;
+  
+  setTimeout(() => {
+    const seatEl = document.getElementById('seat-' + playerId);
+    const tableEl = document.querySelector('.game-table');
+    if (!seatEl || !tableEl) {
+      delete activeAnimations[playerId];
+      if (onComplete) onComplete(); else render();
+      return;
+    }
+    
+    const animCard = document.createElement('div');
+    animCard.className = 'animating-card-overlay';
+    animCard.innerHTML = `
+      <div class="animating-card-content">
+        <div class="card-badge">${cardRoman(cardValue)}</div>
+        <div class="card-portrait-wrap">
+          <img class="card-portrait" src="${cardImage(cardValue)}" alt="">
+        </div>
+        <div class="card-info">
+          <div class="cname">${cardName(cardValue)}</div>
+          <div class="cdesc">${cardDesc(cardValue)}</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(animCard);
+    
+    const seatRect = seatEl.getBoundingClientRect();
+    const tableRect = tableEl.getBoundingClientRect();
+    
+    const startX = seatRect.left + seatRect.width / 2 - 65;
+    const startY = seatRect.top + seatRect.height / 2 - 90;
+    
+    animCard.style.left = startX + 'px';
+    animCard.style.top = startY + 'px';
+    animCard.style.transform = 'scale(0.1)';
+    animCard.style.opacity = '0';
+    
+    animCard.offsetHeight; // force reflow
+    
+    const centerX = tableRect.left + tableRect.width / 2 - 65;
+    const centerY = tableRect.top + tableRect.height / 2 - 90;
+    
+    animCard.style.left = centerX + 'px';
+    animCard.style.top = centerY + 'px';
+    animCard.style.transform = 'scale(1.5)';
+    animCard.style.opacity = '1';
+    
+    setTimeout(() => {
+      const discardEl = document.getElementById('discards-' + playerId);
+      let targetX = centerX;
+      let targetY = centerY;
+      
+      if (discardEl) {
+        const discardRect = discardEl.getBoundingClientRect();
+        targetX = discardRect.left + discardRect.width / 2 - 65;
+        targetY = discardRect.top + discardRect.height / 2 - 90;
+      } else {
+        targetX = startX;
+        targetY = startY;
+      }
+      
+      animCard.style.transition = 'all 0.6s cubic-bezier(0.5, 0, 0.75, 0)';
+      animCard.style.left = targetX + 'px';
+      animCard.style.top = targetY + 'px';
+      animCard.style.transform = 'scale(0.13)';
+      animCard.style.opacity = '0.3';
+      
+      setTimeout(() => {
+        if (animCard.parentNode) {
+          document.body.removeChild(animCard);
+        }
+        delete activeAnimations[playerId];
+        if (onComplete) onComplete(); else render();
+      }, 600);
+      
+    }, 1500);
+    
+  }, 100);
+}
+
 function applyEventEffects(oldS, newS){
   if(!newS) return;
   if(newS.status==='playing' && newS.currentPlayerId===myId && (!oldS || oldS.currentPlayerId!==myId)){
@@ -482,11 +1279,13 @@ function applyEventEffects(oldS, newS){
   if(oldS && oldS.players){
     newS.players.forEach(p=>{
       const old=oldS.players.find(o=>o.id===p.id);
-      if(old && old.alive && !p.alive){
-        sfxEliminate();
-        eliminateToast={name:p.name};
-        clearTimeout(eliminateToastTimer);
-        eliminateToastTimer=setTimeout(()=>{ eliminateToast=null; render(); }, 2200);
+      if(old){
+        if(old.alive && !p.alive){
+          sfxEliminate();
+          eliminateToast={name:p.name};
+          clearTimeout(eliminateToastTimer);
+          eliminateToastTimer=setTimeout(()=>{ eliminateToast=null; render(); }, 2200);
+        }
       }
     });
   }
@@ -494,16 +1293,75 @@ function applyEventEffects(oldS, newS){
     speak(newS.log[newS.log.length-1]);
   }
 }
+
+let pendingState = null;
+function transitionToState(ns) {
+  if (!ns) return;
+  
+  if (state && JSON.stringify(ns) === JSON.stringify(state)) return;
+  if (pendingState && JSON.stringify(ns) === JSON.stringify(pendingState)) return;
+  
+  const oldS = state;
+  
+  // Detect all players whose discard piles grew
+  const plays = [];
+  if (oldS && oldS.players) {
+    ns.players.forEach(p => {
+      const old = oldS.players.find(o => o.id === p.id);
+      if (old) {
+        const oldPile = old.discardPile || [];
+        const newPile = p.discardPile || [];
+        if (newPile.length > oldPile.length) {
+          plays.push({
+            playerId: p.id,
+            cardValue: newPile[newPile.length - 1],
+            isActor: p.id === oldS.currentPlayerId
+          });
+        }
+      }
+    });
+  }
+  
+  // Sort: active player (actor) plays first
+  plays.sort((a, b) => (b.isActor ? 1 : 0) - (a.isActor ? 1 : 0));
+  
+  if (plays.length > 0) {
+    pendingState = ns;
+    
+    let currentAnimIndex = 0;
+    function runNextAnimation() {
+      if (currentAnimIndex < plays.length) {
+        const play = plays[currentAnimIndex];
+        currentAnimIndex++;
+        animateCardPlay(play.playerId, play.cardValue, runNextAnimation);
+      } else {
+        const targetState = pendingState;
+        pendingState = null;
+        if (targetState) {
+          applyEventEffects(state, targetState);
+          state = targetState;
+          render();
+        }
+      }
+    }
+    
+    runNextAnimation();
+  } else {
+    applyEventEffects(oldS, ns);
+    state = ns;
+    render();
+  }
+}
+
 async function saveState(ns){
-  applyEventEffects(state, ns);
-  state=ns;
-  render();
+  transitionToState(ns);
   try{
     await db.ref('rooms/'+roomCode).set(ns);
   }catch(e){
     showNotice('儲存失敗,請檢查網路後再試一次。('+errMsg(e)+')');
   }
 }
+
 /* Firebase Realtime Database silently omits keys whose value is an empty
    array/null, so fields like an empty discard pile or faceUpRemoved come
    back missing instead of []. Restore sane defaults on every read. */
@@ -523,6 +1381,7 @@ function normalizeState(ns){
   });
   return ns;
 }
+
 function subscribeRoom(code){
   if(roomRef) roomRef.off();
   roomRef=db.ref('rooms/'+code);
@@ -530,13 +1389,12 @@ function subscribeRoom(code){
     const ns=normalizeState(snap.val());
     if(!ns) return;
     if(JSON.stringify(ns)!==JSON.stringify(state)){
-      applyEventEffects(state, ns);
       if(state && ns.currentPlayerId!==state.currentPlayerId) localUI={stage:null,selectedCard:null,targetId:null,guess:null};
-      state=ns;
-      render();
+      transitionToState(ns);
     }
   });
 }
+
 function unsubscribeRoom(){
   if(roomRef){ roomRef.off(); roomRef=null; }
 }
@@ -1128,38 +1986,176 @@ function renderLobby(){
   </div>`;
 }
 
-function renderPlayerBoard(){
-  let rows=state.players.map(p=>{
-    let cls='player-row';
-    if(p.id===state.currentPlayerId) cls+=' active';
-    if(!p.alive) cls+=' dead';
-    let tags='';
-    if(p.id===state.currentPlayerId) tags+='<span class="tag turn">行動中</span>';
-    if(p.isBot) tags+='<span class="tag prot" style="background:#3a3a55;color:#dde0ff;">AI</span>';
-    if(p.protected) tags+='<span class="tag prot">受保護</span>';
-    if(p.id===state.hostId) tags+='<span class="tag host">房主</span>';
-    let dots='';
-    for(let i=0;i<p.tokens;i++) dots+='<span class="token-dot"></span>';
-    return `<div class="${cls}">
-      <span>${escapeHtml(p.name)}${tags}</span>
-      <span class="tokens">${dots}</span>
+function renderGameTable() {
+  const me = myPlayer();
+  const myTurn = state.currentPlayerId === myId;
+  const canDraw = myTurn && !localUI.stage;
+  const validTargets = localUI.selectedCard != null ? computeValidTargets(localUI.selectedCard) : [];
+  
+  const seated = getSeatedPlayers();
+  let seatsHtml = '';
+  let discardsHtml = '';
+  
+  seated.forEach((p, i) => {
+    const seatStyle = getSeatStyle(seated.length, i);
+    const discardStyle = getDiscardStyle(seated.length, i);
+    
+    let cls = 'player-seat';
+    if (p.id === state.currentPlayerId) cls += ' active';
+    if (!p.alive) cls += ' dead';
+    if (p.protected) cls += ' protected';
+    
+    const isValidTarget = validTargets.some(t => t.id === p.id);
+    let seatAttr = '';
+    if (isValidTarget) {
+      cls += ' targetable';
+      seatAttr = `onclick="selectTarget('${p.id}')"`;
+    }
+    if (localUI.targetId === p.id) {
+      cls += ' target-selected';
+    }
+    
+    let tags = '';
+    if (p.id === state.currentPlayerId) tags += '<span class="seat-tag turn">行動</span>';
+    if (p.protected) tags += '<span class="seat-tag prot">保護</span>';
+    if (p.isBot) tags += '<span class="seat-tag bot">AI</span>';
+    if (p.id === state.hostId) tags += '<span class="seat-tag host">房主</span>';
+    
+    let dots = '';
+    for (let t = 0; t < p.tokens; t++) {
+      dots += '<span class="token-dot"></span>';
+    }
+    
+    let handCountHtml = '';
+    if (p.alive) {
+      const cardCount = p.hand ? p.hand.length : 0;
+      let cardIcons = '';
+      for (let c = 0; c < cardCount; c++) {
+        cardIcons += '<span class="seat-hand-card-icon"></span>';
+      }
+      handCountHtml = `<span class="seat-hand-icon">${cardIcons}</span>`;
+    } else {
+      handCountHtml = `<span>💀</span>`;
+    }
+    
+    seatsHtml += `<div class="${cls}" id="seat-${p.id}" style="${seatStyle}" ${seatAttr}>
+      <div class="seat-name">${escapeHtml(p.name)}</div>
+      <div class="seat-tags">${tags}</div>
+      <div class="seat-tokens-hand">
+        <div class="tokens">${dots}</div>
+        ${p.id === myId ? '' : handCountHtml}
+      </div>
     </div>`;
-  }).join('');
-  return `<div class="panel"><h2>牌桌</h2>${rows}
-    <div class="hint mt8">牌堆剩餘:${state.deck.length} 張${state.faceUpRemoved.length?(' ・ 公開移除:'+state.faceUpRemoved.map(v=>cardRoman(v)).join('、')):''}</div>
-  </div>`;
-}
-
-function renderDiscards(){
-  let html='<div class="panel"><h2>棄牌</h2>';
-  state.players.forEach(p=>{
-    html+=`<div style="margin-bottom:6px;"><div style="font-size:12px;opacity:.8;margin-bottom:3px;">${escapeHtml(p.name)}</div><div class="discard-row">`;
-    if(p.discardPile.length===0) html+='<span style="font-size:12px;opacity:.5;">(尚未棄牌)</span>';
-    p.discardPile.forEach(v=>{ html+=`<span class="small-card">${cardRoman(v)}</span>`; });
-    html+='</div></div>';
+    
+    const pile = p.discardPile || [];
+    let discardCardsHtml = '';
+    if (pile.length > 0) {
+      pile.forEach(v => {
+        discardCardsHtml += `<span class="table-discard-card" title="${cardName(v)}">${cardRoman(v)}</span>`;
+      });
+    }
+    discardsHtml += `<div class="table-discards-wrap" id="discards-${p.id}" style="${discardStyle}">
+      ${discardCardsHtml}
+    </div>`;
   });
-  html+='</div>';
-  return html;
+  
+  let centerHtml = `<div class="table-center"><div class="center-piles">`;
+  if (state.deck.length > 0) {
+    let deckClass = 'draw-pile-deck';
+    let deckAttr = '';
+    let deckTipHtml = '';
+    if (canDraw) {
+      deckClass += ' interactive glow-deck';
+      deckAttr = 'onclick="doDraw()"';
+      deckTipHtml = `<div class="deck-click-tip">點擊抽牌</div>`;
+    }
+    centerHtml += `<div class="${deckClass}" ${deckAttr}>${state.deck.length}${deckTipHtml}</div>`;
+  } else {
+    centerHtml += `<div class="draw-pile-deck" style="opacity: 0.15; border-style: dashed; background: none;">0</div>`;
+  }
+  if (state.removedCard != null) {
+    centerHtml += `<div class="draw-pile-deck" style="opacity: 0.35; transform: rotate(15deg); margin-left: -12px;"></div>`;
+  }
+  centerHtml += `</div><div class="center-deck-count">牌堆剩餘: ${state.deck.length} 張</div>`;
+  if (state.faceUpRemoved && state.faceUpRemoved.length > 0) {
+    let faceupCards = state.faceUpRemoved.map(v => `<span class="center-faceup-card" title="${cardName(v)}">${cardRoman(v)}</span>`).join('');
+    centerHtml += `<div class="center-faceup-piles">${faceupCards}</div>`;
+  }
+  centerHtml += `</div>`;
+  
+  let myHandHtml = '';
+  if (me && me.alive) {
+    const th = tempHand();
+    let cardsHtml = '';
+    th.forEach(v => {
+      const locked = forcedCountess() && v !== 7;
+      const sel = localUI.selectedCard === v ? ' selected' : '';
+      const clickAction = locked ? '' : `onclick="selectCard(${v})"`;
+      const cardClass = `table-hand-card${sel}${locked ? ' locked' : ''}`;
+      cardsHtml += `
+        <div class="${cardClass}" ${clickAction}>
+          <div class="card-badge">${cardRoman(v)}</div>
+          <div class="card-portrait-wrap">
+            <img class="card-portrait" src="${cardImage(v)}" alt="${cardName(v)}">
+          </div>
+          <div class="card-info">
+            <div class="cname">${cardName(v)}</div>
+            <div class="cdesc">${cardDesc(v)}</div>
+          </div>
+        </div>
+      `;
+    });
+    myHandHtml = `<div class="table-my-hand">${cardsHtml}</div>`;
+  }
+  
+  let tableActionHtml = '';
+  if (myTurn && localUI.stage && localUI.selectedCard != null) {
+    const card = localUI.selectedCard;
+    const needsTarget = [1,2,3,5,6].includes(card);
+    const targets = computeValidTargets(card);
+    const canConfirm = !needsTarget || targets.length === 0 || (localUI.targetId != null && (card !== 1 || localUI.guess != null));
+    
+    tableActionHtml = `
+      <div class="table-action-row">
+        <div class="table-btn secondary" onclick="cancelSelection()">重新選擇</div>
+        <div class="table-btn${canConfirm ? '' : ' disabled'}" onclick="${canConfirm ? 'confirmPlay()' : ''}">確認出牌</div>
+      </div>
+    `;
+  }
+  
+  let guessOverlayHtml = '';
+  if (myTurn && localUI.stage && localUI.selectedCard === 1 && localUI.targetId != null) {
+    let guessButtons = '';
+    for (let n = 2; n <= 8; n++) {
+      const isSelected = localUI.guess === n ? ' selected' : '';
+      guessButtons += `
+        <div class="table-guess-btn${isSelected}" onclick="selectGuess(${n})">
+          <span class="guess-roman">${cardRoman(n)}</span>
+          <span class="guess-name">${cardName(n)}</span>
+        </div>
+      `;
+    }
+    guessOverlayHtml = `
+      <div class="table-guess-overlay">
+        <div class="table-guess-title">猜測對手的手牌</div>
+        <div class="table-guess-grid">
+          ${guessButtons}
+        </div>
+      </div>
+    `;
+  }
+  
+  const isDisabled = state.status !== 'playing';
+  const tableClass = `game-table${isDisabled ? ' disabled' : ''}`;
+  
+  return `<div class="${tableClass}">
+    ${seatsHtml}
+    ${discardsHtml}
+    ${centerHtml}
+    ${myHandHtml}
+    ${guessOverlayHtml}
+    ${tableActionHtml}
+  </div>`;
 }
 
 function renderLog(){
@@ -1191,7 +2187,7 @@ function renderHighlight(){
 function renderPlaying(){
   const me=myPlayer();
   const myTurn=state.currentPlayerId===myId;
-  let html=renderPlayerBoard();
+  let html=renderGameTable();
   html+=renderHighlight();
 
   if(!me){
@@ -1208,21 +2204,9 @@ function renderPlaying(){
     html+=`<div class="panel center-text">等待 <b>${escapeHtml(cur?cur.name:'')}</b> 行動…</div>`;
   }
 
-  if(me.alive && me.hand.length && !localUI.stage){
-    html+=`<div class="panel"><h2>你的手牌</h2>
-      <div class="cards-row">
-        <div class="card">
-          <div class="card-icon">${cardIcon(me.hand[0])}</div>
-          <div class="roman display">${cardRoman(me.hand[0])}</div>
-          <div class="cname">${cardName(me.hand[0])}</div>
-          <div class="cdesc">${cardDesc(me.hand[0])}</div>
-        </div>
-      </div>
-    </div>`;
-  }
+
 
   html+=renderEmoteBar();
-  html+=renderDiscards();
   html+=renderLog();
   return html;
 }
@@ -1231,56 +2215,47 @@ function renderMyTurn(me){
   if(!localUI.stage){
     return `<div class="panel center-text">
       <div>輪到你了。</div>
-      <div class="seal-wrap"><div class="seal pulse" onclick="doDraw()"><span>抽牌</span><small>DRAW</small></div></div>
+      <div style="margin: 15px 0; font-size: 16px; color: var(--gold-light); font-weight: 700; animation: flicker 1.8s infinite;">請點擊牌桌上的牌堆抽牌</div>
     </div>`;
   }
-  const th=tempHand();
-  let html=`<div class="panel"><h2>選一張出牌</h2>`;
-  if(forcedCountess()) html+=`<div class="hint">你同時持有伯爵夫人與國王/王子,必須棄掉伯爵夫人。</div>`;
-  html+=`<div class="cards-row">`;
-  th.forEach(v=>{
-    const locked=forcedCountess() && v!==7;
-    const sel=localUI.selectedCard===v?' selected':'';
-    html+=`<div class="card${sel}${locked?' locked':''}" onclick="${locked?'':'selectCard('+v+')'}">
-      <div class="card-icon">${cardIcon(v)}</div>
-      <div class="roman display">${cardRoman(v)}</div>
-      <div class="cname">${cardName(v)}</div>
-      <div class="cdesc">${cardDesc(v)}</div>
+  
+  let html = '';
+  
+  if (localUI.selectedCard == null) {
+    html += `<div class="panel center-text">
+      <div style="font-size: 15px; color: var(--gold-light); font-weight: 700;">請在牌桌上點擊選擇一張手牌出牌</div>
+      ${forcedCountess() ? `<div class="hint mt8" style="color: #ff8888;">你同時持有伯爵夫人與國王/王子，必須點擊牌桌上的伯爵夫人棄掉它。</div>` : ''}
     </div>`;
-  });
-  html+=`</div>`;
-
-  if(localUI.selectedCard!=null){
-    const card=localUI.selectedCard;
-    const needsTarget=[1,2,3,5,6].includes(card);
-    const targets=computeValidTargets(card);
-    if(needsTarget){
-      if(targets.length===0){
-        html+=`<div class="hint mt8">目前沒有可指定的目標,這個效果將會無效。</div>`;
-      }else{
-        html+=`<div class="hint mt8">選擇目標:</div><div class="target-grid">`;
-        targets.forEach(t=>{
-          const sel=localUI.targetId===t.id?' sel':'';
-          html+=`<div class="pill${sel}" onclick="selectTarget('${t.id}')">${escapeHtml(t.name)}${t.id===myId?'(自己)':''}</div>`;
-        });
-        html+=`</div>`;
-        if(card===1 && localUI.targetId!=null){
-          html+=`<div class="hint">猜測對方手牌:</div><div class="guess-grid">`;
-          for(let n=2;n<=8;n++){
-            const sel=localUI.guess===n?' sel':'';
-            html+=`<div class="guess-pill${sel}" onclick="selectGuess(${n})">${cardRoman(n)} ${cardName(n)}</div>`;
-          }
-          html+=`</div>`;
-        }
+    return html;
+  }
+  
+  const card = localUI.selectedCard;
+  html += `<div class="panel">
+    <h2>出牌決策：${cardRoman(card)} ${cardName(card)}</h2>
+    <div style="font-size:13px; font-style:italic; color:var(--parchment-dark); margin-bottom:12px;">${cardDesc(card)}</div>
+  `;
+  
+  const needsTarget = [1,2,3,5,6].includes(card);
+  const targets = computeValidTargets(card);
+  if (needsTarget) {
+    if (targets.length === 0) {
+      html += `<div class="hint mt8">目前沒有可指定的目標，這個效果將會無效。</div>`;
+    } else {
+      const targetName = localUI.targetId != null ? (findP(localUI.targetId) ? findP(localUI.targetId).name : '') : null;
+      html += `<div class="hint mt8" style="color: var(--gold-light); font-weight: 700; font-size: 14px;">
+        選擇目標: ${targetName ? `已選擇 <b>${escapeHtml(targetName)}</b>` : '請在上方牌桌點擊目標玩家座位'}
+      </div>`;
+      
+      if (card === 1 && localUI.targetId != null) {
+        // Guess grid is now rendered directly on the card table overlay.
       }
     }
-    const canConfirm = !needsTarget || targets.length===0 || (localUI.targetId!=null && (card!==1 || localUI.guess!=null));
-    html+=`<div class="btn-row mt14">
-      <div class="btn secondary" onclick="cancelSelection()">重新選擇</div>
-      <div class="btn${canConfirm?'':' disabled'}" onclick="${canConfirm?'confirmPlay()':''}">確認出牌</div>
-    </div>`;
   }
-  html+=`</div>`;
+  
+  const canConfirm = !needsTarget || targets.length === 0 || (localUI.targetId != null && (card !== 1 || localUI.guess != null));
+
+  
+  html += `</div>`;
   return html;
 }
 
@@ -1296,7 +2271,7 @@ function renderRoundEnd(){
     html+=`<div class="player-row"><span>${escapeHtml(p.name)}${!p.alive?'(已出局)':''}</span><span>${p.hand.length?cardRoman(p.hand[0])+' '+cardName(p.hand[0]):'—'}</span></div>`;
   });
   html+=`</div>`;
-  html+=renderPlayerBoard();
+  html+=renderGameTable();
   html+=`<div class="panel center-text">
     ${isHost?`<div class="btn full" onclick="doNextRound()">下一輪</div>`:`<div class="hint">等待房主開始下一輪…</div>`}
   </div>`;
@@ -1342,8 +2317,8 @@ function renderRulesModal(){
   let items='';
   for(let v=1;v<=8;v++){
     items+=`<div class="rule-item" style="display:flex;gap:10px;align-items:flex-start;">
-      <div class="card-icon small" style="flex:none;margin:2px 0 0;">${cardIcon(v)}</div>
-      <div><b>${cardRoman(v)} ${cardName(v)}</b>(${CARDS[v].count} 張)<br>${cardDesc(v)}</div>
+      <img src="${cardImage(v)}" style="width:32px;height:42px;border-radius:4px;border:1px solid var(--gold-deep);object-fit:cover;flex:none;" alt="">
+      <div><b>${cardRoman(v)} ${cardName(v)}</b> (${CARDS[v].count} 張)<br>${cardDesc(v)}</div>
     </div>`;
   }
   return `<div class="modal-overlay" onclick="if(event.target===this) toggleRules()">
