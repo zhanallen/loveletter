@@ -816,11 +816,13 @@ function checkCountdownFinish(){
   setTimeout(()=>{countdownLock=false;}, 1500);
 }
 let lastSeenRevealNonce=null;
+try { lastSeenRevealNonce = sessionStorage.getItem('loveletter_last_seen_reveal'); } catch(e){}
 function checkBaronReveal(){
   if(!state || !state.lastReveal) return;
   const r=state.lastReveal;
   if(r.nonce===lastSeenRevealNonce) return;
   lastSeenRevealNonce=r.nonce;
+  try { sessionStorage.setItem('loveletter_last_seen_reveal', r.nonce); } catch(e){}
   if(r.type==='priest'){
     if(myId!==r.aId) return; // only the player who peeked sees the card
     const opp=findP(r.bId);
@@ -835,6 +837,7 @@ function checkBaronReveal(){
   showNotice(`你的手牌是「${cardRoman(myVal)} ${cardName(myVal)}」,${opp?opp.name:'對方'} 的手牌是「${cardRoman(oppVal)} ${cardName(oppVal)}」。`, '男爵 · 比較手牌');
 }
 let lastSeenEmoteNonce=null;
+try { lastSeenEmoteNonce = sessionStorage.getItem('loveletter_last_seen_emote'); } catch(e){}
 let emoteToast=null;
 let emoteToastTimer=null;
 function checkEmote(){
@@ -842,6 +845,7 @@ function checkEmote(){
   const e=state.lastEmote;
   if(e.nonce===lastSeenEmoteNonce) return;
   lastSeenEmoteNonce=e.nonce;
+  try { sessionStorage.setItem('loveletter_last_seen_emote', e.nonce); } catch(e){}
   const p=findP(e.playerId);
   emoteToast={name:p?p.name:'?', emoji:e.emoji};
   sfxEmote();
