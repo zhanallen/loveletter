@@ -1480,9 +1480,13 @@ function renderGameTable() {
     
     const isValidTarget = validTargets.some(t => t.id === p.id);
     let seatAttr = '';
+    let arrowHtml = '';
     if (isValidTarget) {
       cls += ' targetable';
       seatAttr = `onclick="selectTarget('${p.id}')"`;
+      if (localUI.targetId == null) {
+        arrowHtml = '<div class="target-arrow">▼</div>';
+      }
     }
     if (localUI.targetId === p.id) {
       cls += ' target-selected';
@@ -1513,6 +1517,7 @@ function renderGameTable() {
     }
     
     seatsHtml += `<div class="${cls}" id="seat-${p.id}" style="${seatStyle}" ${seatAttr}>
+      ${arrowHtml}
       <div class="seat-name">${escapeHtml(p.name)}</div>
       <div class="seat-tags">${tags}</div>
       <div class="seat-tokens-hand">
@@ -1634,24 +1639,6 @@ function renderGameTable() {
   const isDisabled = state.status !== 'playing';
   const tableClass = `game-table${isDisabled ? ' disabled' : ''}${dims.mobile ? ' mobile' : ''}`;
 
-  let promptBannerHtml = '';
-  if (myTurn && localUI.stage && localUI.selectedCard != null) {
-    const card = localUI.selectedCard;
-    const needsTarget = [1,2,3,5,6].includes(card);
-    const targets = computeValidTargets(card);
-    if (needsTarget && targets.length > 0 && localUI.targetId == null) {
-      const promptText = card === 5 
-        ? '請選擇一個玩家（對手或自己）施放王子技能' 
-        : '請選擇一個對手玩家施放技能';
-      promptBannerHtml = `
-        <div class="table-target-prompt-banner">
-          <div class="pulse-icon">🔮</div>
-          <div>${promptText}</div>
-        </div>
-      `;
-    }
-  }
-
   return `<div class="game-table-container${dims.mobile ? ' mobile' : ''}">
     <div class="${tableClass}" style="width:${dims.w}px;height:${dims.h}px;">
       ${seatsHtml}
@@ -1660,7 +1647,6 @@ function renderGameTable() {
       ${myHandHtml}
       ${guessOverlayHtml}
       ${tableActionHtml}
-      ${promptBannerHtml}
     </div>
   </div>`;
 }
