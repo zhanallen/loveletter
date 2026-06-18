@@ -1076,3 +1076,67 @@ input[type=text]:focus{outline:2px solid var(--gold-light);}
   align-items: stretch;
   gap: 6px;
 }
+
+/* ==========================================================================
+   Custom Scrollbar Styles (羊皮紙古典墨金風格滾動條)
+   ========================================================================== */
+
+/* Light Modals Scrollbar (套用於規則說明、聊天室等淺色彈窗) */
+.modal-box::-webkit-scrollbar {
+  width: 8px;
+}
+.modal-box::-webkit-scrollbar-track {
+  background: rgba(44, 28, 18, 0.04);
+  border-radius: 4px;
+}
+.modal-box::-webkit-scrollbar-thumb {
+  background: var(--gold-deep);
+  border-radius: 4px;
+}
+.modal-box::-webkit-scrollbar-thumb:hover {
+  background: #6a4a0e;
+}
+.modal-box {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold-deep) rgba(44, 28, 18, 0.04);
+}
+
+/* Chat Log Scrollbar (聊天室訊息流滾動條) */
+#chatLog::-webkit-scrollbar {
+  width: 6px;
+}
+#chatLog::-webkit-scrollbar-track {
+  background: rgba(44, 28, 18, 0.04);
+  border-radius: 3px;
+}
+#chatLog::-webkit-scrollbar-thumb {
+  background: var(--gold);
+  border-radius: 3px;
+}
+#chatLog::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-deep);
+}
+#chatLog {
+  scrollbar-width: thin;
+  scrollbar-color: var(--gold) rgba(44, 28, 18, 0.04);
+}
+
+/* Dark Log Box Scrollbar (套用於主畫面深色信箋紀事) */
+.log-box::-webkit-scrollbar {
+  width: 6px;
+}
+.log-box::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+.log-box::-webkit-scrollbar-thumb {
+  background: rgba(201, 164, 80, 0.45);
+  border-radius: 3px;
+}
+.log-box::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+.log-box {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 164, 80, 0.45) rgba(0, 0, 0, 0.15);
+}
