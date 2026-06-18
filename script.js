@@ -725,15 +725,44 @@ async function doRemoveBot(id){
   saveState(ns);
 }
 async function doLeaveRoom(){
-  if(state && myId && roomCode){
+  const code = roomCode;
+  const id = myId;
+  const oldState = state;
+
+  // 1. Immediately unsubscribe from Firebase to stop receiving optimistic state events
+  unsubscribeRoom();
+  
+  // 2. Instantly reset all UI-related and toast variables to return to a clean home screen
+  roomCode=null; myId=null; state=null;
+  localUI={stage:null,selectedCard:null,targetId:null,guess:null};
+  rulesOpen=false;
+  roomMenuOpen=false;
+  chatOpen=false;
+  chatUnread=0;
+  settingsOpen=false;
+  notice=null;
+  emoteToast=null;
+  eliminateToast=null;
+  screenFlash=null;
+  clearTimeout(emoteToastTimer);
+  clearTimeout(eliminateToastTimer);
+  
+  // 3. Forcefully remove any in-progress card play animations from the DOM
+  document.querySelectorAll('.animating-card-overlay').forEach(el => el.remove());
+  
+  // 4. Instantly render the home page
+  render();
+
+  // 5. Asynchronously write the update to Firebase in the background
+  if(oldState && id && code){
     try{
-      const ns=clone(state);
-      const me=ns.players.find(p=>p.id===myId);
+      const ns=clone(oldState);
+      const me=ns.players.find(p=>p.id===id);
       if(me){
         ns.log=ns.log||[];
         if(ns.status==='lobby'){
-          ns.players=ns.players.filter(p=>p.id!==myId);
-          if(ns.hostId===myId){
+          ns.players=ns.players.filter(p=>p.id!==id);
+          if(ns.hostId===id){
             const nextHost=ns.players[0];
             if(nextHost) ns.hostId=nextHost.id;
           }
@@ -743,12 +772,12 @@ async function doLeaveRoom(){
           me.left=true;
           if(me.hand && me.hand.length){ me.discardPile=(me.discardPile||[]).concat(me.hand); me.hand=[]; }
           ns.log.push(`${me.name} 離開了遊戲。`);
-          if(ns.hostId===myId){
-            const nextHost=ns.players.find(p=>p.id!==myId && !p.isBot) || ns.players.find(p=>p.id!==myId);
+          if(ns.hostId===id){
+            const nextHost=ns.players.find(p=>p.id!==id && !p.isBot) || ns.players.find(p=>p.id!==id);
             if(nextHost) ns.hostId=nextHost.id;
           }
           if(ns.status==='playing'){
-            if(ns.currentPlayerId===myId){
+            if(ns.currentPlayerId===id){
               finalizeTurnOrRoundEnd(ns);
             }else{
               const alivePlayers=ns.players.filter(p=>p.alive);
@@ -758,15 +787,11 @@ async function doLeaveRoom(){
             }
           }
         }
-        await db.ref('rooms/'+roomCode).set(ns);
+        await db.ref('rooms/'+code).set(ns);
       }
-    }catch(e){ /* best effort - still leave locally even if this fails */ }
+    }catch(e){ /* best effort */ }
   }
   try{ localStorage.removeItem('loveletter_session'); }catch(e){}
-  unsubscribeRoom();
-  roomCode=null; myId=null; state=null;
-  localUI={stage:null,selectedCard:null,targetId:null,guess:null};
-  render();
 }
 function enterCountdown(ns){
   ns.status='countdown';
