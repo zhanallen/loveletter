@@ -472,9 +472,17 @@ function applyEventEffects(oldS, newS){
       const old=oldS.players.find(o=>o.id===p.id);
       if(old && old.alive && !p.alive){
         sfxEliminate();
-        eliminateToast={name:p.name};
-        clearTimeout(eliminateToastTimer);
-        eliminateToastTimer=setTimeout(()=>{ eliminateToast=null; render(); }, 2200);
+        
+        // Show eliminate toast directly in the DOM
+        const oldToast = document.getElementById('game-eliminate-toast');
+        if(oldToast) oldToast.remove();
+        const toast = document.createElement('div');
+        toast.id = 'game-eliminate-toast';
+        toast.className = 'eliminate-toast';
+        toast.innerHTML = `⚜ ${escapeHtml(p.name)} 出局了 ⚜`;
+        document.body.appendChild(toast);
+        setTimeout(() => { if(toast.parentNode) toast.remove(); }, 2200);
+        
         if(p.id===myId){ vibrate([200]); triggerScreenFlash('eliminate'); }
       }
     });
@@ -483,12 +491,34 @@ function applyEventEffects(oldS, newS){
     speak(newS.log[newS.log.length-1]);
   }
   if(oldS && newS.chatMessages && oldS.chatMessages && newS.chatMessages.length>oldS.chatMessages.length){
-    const incoming=newS.chatMessages.slice(oldS.chatMessages.length).filter(m=>m.playerId!==myId);
-    if(incoming.length>0 && !chatOpen){
-      chatUnread+=incoming.length;
+    const incoming=newS.chatMessages.slice(oldS.chatMessages.length);
+    
+    // Append new messages directly to DOM if chat modal is open
+    const cl=document.getElementById('chatLog');
+    if(cl){
+      const hint=cl.querySelector('.hint');
+      if(hint) hint.remove();
+      incoming.forEach(m=>{
+        const mine=m.playerId===myId;
+        const msgDiv=document.createElement('div');
+        msgDiv.style.marginBottom='8px';
+        msgDiv.style.textAlign=mine?'right':'left';
+        msgDiv.innerHTML=`
+          <div style="font-size:11px;opacity:.6;">${escapeHtml(m.name)}</div>
+          <div style="display:inline-block;padding:6px 11px;border-radius:8px;font-size:14px;${mine?'background:var(--gold);color:#2c1c00;':'background:rgba(0,0,0,0.08);color:var(--ink);'}max-width:80%;word-break:break-word;">${escapeHtml(m.text)}</div>
+        `;
+        cl.appendChild(msgDiv);
+      });
+      cl.scrollTop=cl.scrollHeight;
+    }
+
+    const remoteIncoming=incoming.filter(m=>m.playerId!==myId);
+    if(remoteIncoming.length>0 && !chatOpen){
+      chatUnread+=remoteIncoming.length;
       beep(700,0.05,'sine'); beep(850,0.06,'sine',0.05);
     }
   }
+  checkEmote();
 }
 
 let pendingState = null;
@@ -755,6 +785,12 @@ async function doLeaveRoom(){
   clearTimeout(emoteToastTimer);
   clearTimeout(eliminateToastTimer);
   
+  // Clean up any dynamic toasts currently in the DOM
+  const et = document.getElementById('game-emote-toast');
+  if(et) et.remove();
+  const elt = document.getElementById('game-eliminate-toast');
+  if(elt) elt.remove();
+  
   // 3. Forcefully remove any in-progress card play animations from the DOM
   document.querySelectorAll('.animating-card-overlay').forEach(el => el.remove());
   
@@ -880,11 +916,23 @@ function checkEmote(){
   lastSeenEmoteNonce=e.nonce;
   try { sessionStorage.setItem('loveletter_last_seen_emote', e.nonce); } catch(e){}
   const p=findP(e.playerId);
-  emoteToast={name:p?p.name:'?', emoji:e.emoji};
+  const name=p?p.name:'?';
+  
   sfxEmote();
-  clearTimeout(emoteToastTimer);
-  emoteToastTimer=setTimeout(()=>{ emoteToast=null; render(); }, 2500);
-  render();
+  
+  // Create and show the emote toast directly in the DOM
+  const oldToast=document.getElementById('game-emote-toast');
+  if(oldToast) oldToast.remove();
+  
+  const toast=document.createElement('div');
+  toast.id='game-emote-toast';
+  toast.className='emote-toast';
+  toast.innerHTML=`${escapeHtml(name)} <span style="font-size:20px;">${escapeHtml(e.emoji)}</span>`;
+  document.body.appendChild(toast);
+  
+  setTimeout(()=>{
+    if(toast.parentNode) toast.remove();
+  }, 2500);
 }
 setInterval(()=>{ if(state && state.status==='countdown') render(); }, 350);
 
@@ -1301,8 +1349,6 @@ function render(force = false){
   if(settingsOpen) html+=renderSettingsModal();
   if(chatOpen) html+=renderChatModal();
   if(notice) html+=renderNoticeModal();
-  if(emoteToast) html+=`<div class="emote-toast">${escapeHtml(emoteToast.name)} <span style="font-size:20px;">${escapeHtml(emoteToast.emoji)}</span></div>`;
-  if(eliminateToast) html+=`<div class="eliminate-toast">⚜ ${escapeHtml(eliminateToast.name)} 出局了 ⚜</div>`;
   if(screenFlash) html+=`<div class="screen-flash ${screenFlash}"></div>`;
   app.innerHTML=html;
   updateTableScale();
@@ -1340,7 +1386,6 @@ function render(force = false){
   maybeRunBot();
   checkCountdownFinish();
   checkBaronReveal();
-  checkEmote();
 }
 
 function renderCountdown(){
