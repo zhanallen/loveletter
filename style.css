@@ -1154,3 +1154,231 @@ input[type=text]:focus{outline:2px solid var(--gold-light);}
     scrollbar-width: none;
   }
 }
+
+/* ==========================================================================
+   Game-Over Celebration Screen & Confetti Effects
+   ========================================================================== */
+
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  opacity: 0.95;
+  animation-name: confetti-fall;
+  animation-iteration-count: 1;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) rotateY(0deg) translateX(0);
+    opacity: 1;
+  }
+  35% {
+    transform: translateY(35vh) rotate(270deg) rotateY(180deg) translateX(25px);
+    opacity: 0.95;
+  }
+  70% {
+    transform: translateY(70vh) rotate(540deg) rotateY(360deg) translateX(-25px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(105vh) rotate(800deg) rotateY(540deg) translateX(15px);
+    opacity: 0;
+  }
+}
+
+.winner-panel {
+  background: linear-gradient(135deg, rgba(200, 161, 61, 0.15) 0%, rgba(92, 19, 32, 0.95) 100%), var(--wine);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 30px 20px;
+  margin-bottom: 16px;
+  text-align: center;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 25px rgba(200, 161, 61, 0.35);
+  animation: bannerPop 0.65s cubic-bezier(.17,.89,.32,1.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.winner-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(232, 205, 126, 0.15), transparent 70%);
+  pointer-events: none;
+}
+
+.winner-crown-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 12px;
+  z-index: 2;
+}
+
+.winner-crown {
+  font-size: 68px;
+  display: inline-block;
+  filter: drop-shadow(0 4px 12px rgba(201, 164, 80, 0.5));
+  animation: trophy-bounce 2.2s ease-in-out infinite;
+}
+
+@keyframes trophy-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.08) rotate(3deg);
+  }
+}
+
+.winner-title {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  color: var(--gold-light);
+  font-size: 15px;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  margin: 8px 0 4px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  z-index: 2;
+  position: relative;
+}
+
+.winner-name {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 6px 0 16px;
+  text-shadow: 0 0 15px rgba(233, 205, 126, 0.75), 0 2px 6px rgba(0,0,0,0.9);
+  animation: winner-glow 2.5s ease-in-out infinite alternate;
+  z-index: 2;
+  position: relative;
+}
+
+@keyframes winner-glow {
+  from {
+    text-shadow: 0 0 10px rgba(233, 205, 126, 0.45), 0 2px 4px rgba(0,0,0,0.8);
+  }
+  to {
+    text-shadow: 0 0 25px rgba(233, 205, 126, 0.85), 0 0 12px var(--gold-light), 0 2px 4px rgba(0,0,0,0.8);
+  }
+}
+
+.winner-stats {
+  margin-bottom: 8px;
+  z-index: 2;
+  position: relative;
+}
+
+.winner-token-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 164, 80, 0.6);
+  font-size: 14px;
+  color: var(--parchment);
+}
+
+.replay-confetti-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 15px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--gold-light);
+  border: 1px solid rgba(201, 164, 80, 0.5);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 12.5px;
+  margin-top: 14px;
+  font-family: 'Noto Serif TC', serif;
+  font-weight: 500;
+  z-index: 2;
+  position: relative;
+}
+
+.replay-confetti-btn:hover {
+  background: rgba(201, 164, 80, 0.18);
+  border-color: var(--gold-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(201, 164, 80, 0.2);
+}
+
+.replay-confetti-btn:active {
+  transform: translateY(1px);
+}
+
+.leaderboard-panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.18)), var(--wine);
+  border: 1px solid rgba(201, 164, 80, 0.35);
+}
+
+.leaderboard-title {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-size: 19px;
+  color: var(--gold-light);
+  margin: 0 0 14px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(201, 164, 80, 0.25);
+  padding-bottom: 8px;
+  text-align: center;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(201, 164, 80, 0.12);
+  transition: background 0.25s ease;
+  font-size: 15px;
+}
+
+.leaderboard-row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-row.is-champion {
+  background: rgba(201, 164, 80, 0.08);
+}
+
+.leaderboard-rank {
+  font-weight: 700;
+  color: var(--gold-light);
+  width: 24px;
+  display: inline-block;
+}
+
+.leaderboard-name {
+  flex-grow: 1;
+  text-align: left;
+  padding-left: 6px;
+  color: var(--parchment);
+}
+
+.leaderboard-row.is-champion .leaderboard-name {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.leaderboard-tokens {
+  display: flex;
+  align-items: center;
+}
+

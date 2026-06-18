@@ -459,7 +459,11 @@ function applyEventEffects(oldS, newS){
   }
   if(oldS && oldS.status!==newS.status){
     if(newS.status==='roundEnd') sfxRoundEnd();
-    if(newS.status==='gameOver'){ sfxWin(); vibrate([100,60,100,60,160]); }
+    if(newS.status==='gameOver'){ 
+      sfxWin(); 
+      vibrate([100,60,100,60,160]); 
+      triggerConfetti();
+    }
   }
   if(oldS && oldS.players){
     newS.players.forEach(p=>{
@@ -1691,21 +1695,65 @@ function renderRoundEnd(){
 }
 
 function renderGameOver(){
-  const champs=state.championIds.map(id=>findP(id)).filter(Boolean);
-  const isHost=state.hostId===myId;
-  let html=`<div class="panel banner-pop">
-    <div class="champion-banner">${champs.map(c=>escapeHtml(c.name)).join('、')} 贏得了這場賭局</div>
+  const champs = state.championIds.map(id => findP(id)).filter(Boolean);
+  const isHost = state.hostId === myId;
+  const champNames = champs.map(c => escapeHtml(c.name)).join('、');
+  
+  // Choose trophy or crown emoji based on tie or single champion
+  const trophyEmoji = champs.length > 1 ? '👑' : '🏆';
+  const celebrationTitle = champs.length > 1 ? '共同主宰賭局' : '至高無上的榮耀';
+
+  let html = `<div class="winner-panel">
+    <div class="winner-crown-wrapper">
+      <span class="winner-crown">${trophyEmoji}</span>
+    </div>
+    <div class="winner-title">⚜ ${celebrationTitle} ⚜</div>
+    <div class="winner-name">${champNames}</div>
+    <div class="winner-stats">
+      <div class="winner-token-badge">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="color:var(--gold-light); margin-right: 4px; display: inline-block; vertical-align: middle;">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+        </svg>
+        <span style="vertical-align: middle;">奪冠信物數：${champs[0] ? champs[0].tokens : state.tokenGoal} / ${state.tokenGoal}</span>
+      </div>
+    </div>
+    <button class="replay-confetti-btn" onclick="triggerConfetti()">
+      🎉 重播慶祝特效
+    </button>
   </div>`;
-  html+=renderWinReason();
-  html+=`<div class="panel"><h2>最終信物數</h2>`;
-  state.players.slice().sort((a,b)=>b.tokens-a.tokens).forEach(p=>{
-    let dots=''; for(let i=0;i<p.tokens;i++) dots+='<span class="token-dot"></span>';
-    html+=`<div class="player-row"><span>${escapeHtml(p.name)}</span><span class="tokens">${dots}</span></div>`;
+
+  html += renderWinReason();
+
+  // Leaderboard panel
+  html += `<div class="panel leaderboard-panel">
+    <h2 class="leaderboard-title">🏆 最終名次排行榜</h2>`;
+  
+  // Sort players by token count (descending)
+  const sortedPlayers = state.players.slice().sort((a, b) => b.tokens - a.tokens);
+  sortedPlayers.forEach((p, index) => {
+    const isChamp = state.championIds.includes(p.id);
+    let dots = '';
+    for (let i = 0; i < p.tokens; i++) {
+      dots += '<span class="token-dot"></span>';
+    }
+    
+    // Determine rank prefix / display
+    let rankDisplay = `${index + 1}`;
+    if (isChamp) {
+      rankDisplay = '👑';
+    }
+
+    html += `<div class="leaderboard-row ${isChamp ? 'is-champion' : ''}">
+      <span class="leaderboard-rank">${rankDisplay}</span>
+      <span class="leaderboard-name">${escapeHtml(p.name)}${p.left ? '(已離開)' : ''}</span>
+      <span class="leaderboard-tokens">${dots || '<span style="color:var(--ink-soft);font-size:12px;">無信物</span>'}</span>
+    </div>`;
   });
-  html+=`</div>`;
-  html+=renderEmoteBar();
-  html+=`<div class="panel center-text">
-    ${isHost?`<div class="btn full" onclick="doPlayAgain()">重新開始</div>`:`<div class="hint">等待房主重新開始…</div>`}
+  html += `</div>`;
+
+  html += renderEmoteBar();
+  html += `<div class="panel center-text">
+    ${isHost ? `<div class="btn full" onclick="doPlayAgain()">重新開始</div>` : `<div class="hint">等待房主重新開始…</div>`}
     <div class="mt8"><span class="btn secondary" onclick="doLeaveRoom()">離開房間</span></div>
   </div>`;
   return html;
@@ -1744,6 +1792,63 @@ function renderRulesModal(){
       <div class="btn full mt14" onclick="toggleRules()">關閉</div>
     </div>
   </div>`;
+}
+
+/* ---------------- Confetti Animation ---------------- */
+function triggerConfetti() {
+  const oldContainer = document.getElementById('game-confetti-container');
+  if (oldContainer) oldContainer.remove();
+
+  const container = document.createElement('div');
+  container.id = 'game-confetti-container';
+  container.className = 'confetti-container';
+
+  const colors = [
+    '#e9cd7e', '#c8a13d', '#7a1c2b', '#5c1320', 
+    '#2ecc71', '#3498db', '#9b59b6', '#ff6b6b', 
+    '#f1c40f', '#fd79a8', '#e67e22', '#1abc9c'
+  ];
+
+  for (let i = 0; i < 110; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+
+    const left = (Math.random() * 100).toFixed(2) + 'vw';
+    const width = Math.floor(Math.random() * 6) + 8; // 8-13px
+    const height = Math.floor(Math.random() * 10) + 6; // 6-15px
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    
+    let borderRadius = '0px';
+    const shapeRand = Math.random();
+    if (shapeRand < 0.25) {
+      borderRadius = '50%'; // Circle
+    } else if (shapeRand < 0.5) {
+      borderRadius = '4px'; // Rounded rect
+    } else if (shapeRand < 0.75) {
+      piece.style.transform = 'skewY(' + (Math.random() * 30 - 15) + 'deg)';
+    }
+
+    const duration = (Math.random() * 3 + 3.5).toFixed(2) + 's';
+    const delay = (Math.random() * 3.5).toFixed(2) + 's';
+
+    piece.style.left = left;
+    piece.style.width = width + 'px';
+    piece.style.height = height + 'px';
+    piece.style.backgroundColor = color;
+    piece.style.borderRadius = borderRadius;
+    piece.style.animationDuration = duration;
+    piece.style.animationDelay = delay;
+
+    container.appendChild(piece);
+  }
+
+  document.body.appendChild(container);
+
+  setTimeout(() => {
+    if (container.parentNode) {
+      container.remove();
+    }
+  }, 9000);
 }
 
 /* ---------------- Init ---------------- */
