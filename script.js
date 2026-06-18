@@ -274,9 +274,9 @@ function renderChatModal(){
     <div class="modal-box" style="display:flex;flex-direction:column;">
       <h3>聊天室</h3>
       <div id="chatLog" style="flex:1;overflow-y:auto;margin-bottom:10px;max-height:48vh;">${items || '<div class="hint">還沒有人說話,打個招呼吧。</div>'}</div>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="chatInput" oninput="onChatInput(this.value)" onkeydown="if(event.key==='Enter' && !event.isComposing){event.preventDefault();sendChatMessage();}" placeholder="輸入訊息…" maxlength="300" style="flex:1;padding:9px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
-        <div class="btn" onclick="sendChatMessage()">送出</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" id="chatInput" oninput="onChatInput(this.value)" onkeydown="if(event.key==='Enter' && !event.isComposing){event.preventDefault();sendChatMessage();}" placeholder="輸入訊息…" maxlength="300" style="flex:1;padding:0 10px;margin:0;height:38px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
+        <div class="btn" onclick="sendChatMessage()" style="height:38px;padding:0 18px;">送出</div>
       </div>
       <div class="btn full secondary mt8" onclick="toggleChat()">關閉</div>
     </div>
@@ -691,9 +691,9 @@ function renderEmoteBar(){
     <div class="btn-row" style="flex-wrap:wrap;">
       ${EMOTES.map(e=>`<div class="pill" style="font-size:20px;padding:7px 12px;" onclick="sendEmote('${e}')">${e}</div>`).join('')}
     </div>
-    <div style="display:flex;gap:8px;margin-top:10px;">
-      <input type="text" id="emoteInput" oninput="onEmoteInput(this.value)" onkeydown="if(event.key==='Enter' && !event.isComposing){event.preventDefault();sendCustomEmote();}" placeholder="或自己輸入表情/文字" maxlength="20" style="flex:1;padding:8px 10px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
-      <div class="btn secondary" onclick="sendCustomEmote()">送出</div>
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:center;">
+      <input type="text" id="emoteInput" oninput="onEmoteInput(this.value)" onkeydown="if(event.key==='Enter' && !event.isComposing){event.preventDefault();sendCustomEmote();}" placeholder="或自己輸入表情/文字" maxlength="20" style="flex:1;padding:0 10px;margin:0;height:38px;border-radius:6px;border:1px solid rgba(201,164,80,0.5);font-size:16px;font-family:'EB Garamond',serif;">
+      <div class="btn secondary" onclick="sendCustomEmote()" style="height:38px;padding:0 18px;">送出</div>
     </div>
   </div>`;
 }
