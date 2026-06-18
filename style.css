@@ -1140,3 +1140,17 @@ input[type=text]:focus{outline:2px solid var(--gold-light);}
   scrollbar-width: thin;
   scrollbar-color: rgba(201, 164, 80, 0.45) rgba(0, 0, 0, 0.15);
 }
+
+/* 在手機模式下隱藏自訂滾動條，使用原生觸控滾動，避免與圓角邊框產生衝突與遮擋 */
+@media (max-width: 587px) {
+  .modal-box::-webkit-scrollbar,
+  #chatLog::-webkit-scrollbar,
+  .log-box::-webkit-scrollbar {
+    display: none;
+  }
+  .modal-box,
+  #chatLog,
+  .log-box {
+    scrollbar-width: none;
+  }
+}
