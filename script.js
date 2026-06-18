@@ -1735,7 +1735,11 @@ function renderRulesModal(){
   return `<div class="modal-overlay" onclick="if(event.target===this) toggleRules()">
     <div class="modal-box">
       <h3>遊戲規則</h3>
-      <p style="font-size:13px;">目標:在每輪結束時存活,或手牌點數最高,就能贏得一枚信物。先集滿信物的人獲勝(2人:7枚 / 3人:5枚 / 4人:4枚)。每回合先抽一張牌,手上會有兩張,選一張出牌並執行效果,留下另一張。</p>
+      <p style="font-size:13px;line-height:1.5;color:var(--ink-soft);">
+        <b>遊戲目標：</b>在每輪結束時存活，或手牌點數最高者贏得一枚信物。先集滿信物者獲勝（2人:7枚 / 3人:5枚 / 4人:4枚）。<br>
+        <b>基本流程：</b>輪到你時先抽一張牌（手牌變為兩張），選擇其中一張打出並執行其效果，留下另一張牌。<br>
+        <b>雙人對決規則：</b>在雙人模式下，遊戲開始時除了隨機蓋掉 1 張牌外，會額外<b>隨機抽 3 張牌「面朝上（公開）」</b>置於牌堆旁。這 3 張牌本局不會被抽到，供雙方推理對手手牌時參考。
+      </p>
       ${items}
       <div class="btn full mt14" onclick="toggleRules()">關閉</div>
     </div>
