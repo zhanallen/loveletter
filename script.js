@@ -254,6 +254,8 @@ function onChatInput(v){ chatDraft=v; }
 async function sendChatMessage(){
   const text=(chatDraft||'').trim();
   if(!text || !state || !myId) return;
+  const el = document.getElementById('chatInput');
+  if (el) el.blur();
   const ns=clone(state);
   ns.chatMessages=(ns.chatMessages||[]);
   ns.chatMessages.push({id:genId(), playerId:myId, name:myName, text:text.slice(0,300), ts:Date.now()});
@@ -701,6 +703,8 @@ function sendCustomEmote(){
   const text=(emoteDraft||'').trim();
   if(!text) return;
   emoteDraft='';
+  const el = document.getElementById('emoteInput');
+  if (el) el.blur();
   sendEmote(text.slice(0,20));
 }
 function renderEmoteBar(){
@@ -1207,18 +1211,63 @@ function renderNoticeModal(){
    and remote state updates can't interrupt typing in the chat / emote fields. */
 let isComposing=false;
 let pendingRender=false;
+let lastRenderedState=null;
+
 document.addEventListener('compositionstart', ()=>{ isComposing=true; }, true);
 document.addEventListener('compositionend', ()=>{
   isComposing=false;
   if(pendingRender){ pendingRender=false; render(); }
 }, true);
 
-function render(){
+// Listen to focusout globally to trigger deferred renders when typing ends
+document.addEventListener('focusout', (e) => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) {
+        if (pendingRender) {
+          pendingRender = false;
+          render();
+        }
+      }
+    }, 100);
+  }
+}, true);
+
+function isCriticalStateChange(oldS, newS) {
+  if (!oldS || !newS) return true;
+  if (oldS.status !== newS.status) return true;
+  if (oldS.currentPlayerId !== newS.currentPlayerId) return true;
+  if (oldS.deck && newS.deck && oldS.deck.length !== newS.deck.length) return true;
+  if (oldS.players.length !== newS.players.length) return true;
+  for (let i = 0; i < newS.players.length; i++) {
+    const pNew = newS.players[i];
+    const pOld = oldS.players.find(p => p.id === pNew.id);
+    if (!pOld) return true;
+    if (pOld.alive !== pNew.alive) return true;
+    if (pOld.tokens !== pNew.tokens) return true;
+    if (pNew.hand && pOld.hand && pOld.hand.length !== pNew.hand.length) return true;
+  }
+  return false;
+}
+
+function render(force = false){
   if(isComposing){ pendingRender=true; return; }
+  
+  const _act=document.activeElement;
+  const isInputFocused = _act && (_act.id === 'emoteInput' || _act.id === 'chatInput');
+  
+  if (isInputFocused && !force) {
+    if (!isCriticalStateChange(lastRenderedState, state)) {
+      pendingRender = true;
+      return;
+    }
+  }
+
+  lastRenderedState = state ? clone(state) : null;
   const app=document.getElementById('app');
   // Remember which field is focused (and the caret position) so a re-render
   // triggered by a notification bubble doesn't kick the user out of typing.
-  const _act=document.activeElement;
   const _focus=(_act && _act.id && (_act.tagName==='INPUT'||_act.tagName==='TEXTAREA'))
     ? {id:_act.id, start:_act.selectionStart, end:_act.selectionEnd} : null;
   let html='';
