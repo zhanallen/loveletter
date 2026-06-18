@@ -306,6 +306,19 @@ function genRoomCode(){
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
+function copyRoomCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    showNotice('房間代碼已複製到剪貼簿！', '複製成功');
+  }).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = code;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showNotice('房間代碼已複製到剪貼簿！', '複製成功');
+  });
+}
 function clone(o){return JSON.parse(JSON.stringify(o));}
 function sumArr(a){return a.reduce((s,v)=>s+v,0);}
 
@@ -1296,7 +1309,14 @@ function renderLobby(){
   return `
   <div class="panel">
     <h2>等候室</h2>
-    <div class="room-code">${roomCode}</div>
+    <div class="room-code" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+      <span style="margin-left:6px;">${roomCode}</span>
+      <span class="copy-btn" onclick="copyRoomCode('${roomCode}')" title="複製房間代碼">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+        </svg>
+      </span>
+    </div>
     <div class="hint center-text mt8">把代碼分享給朋友,讓他們在「加入房間」輸入;也可以直接加電腦對手一個人玩。</div>
     <div class="mt14">${rows}</div>
     ${isHost && state.players.length<4 ? `<div class="btn-row mt8"><div class="btn secondary" onclick="doAddBot()">新增電腦對手</div></div>` : ''}

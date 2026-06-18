@@ -314,6 +314,25 @@ input[type=text]:focus{outline:2px solid var(--gold-light);}
   transition: all 0.2s ease;
   box-shadow: 0 3px 8px rgba(0,0,0,0.5);
 }
+.copy-btn {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  color: var(--ink-soft);
+  opacity: 0.8;
+}
+.copy-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--ink);
+  opacity: 1;
+}
+.copy-btn:active {
+  transform: scale(0.9);
+}
 #leaveLink { left: 14px; }
 #settingsLink { left: 58px; }
 #chatLink { right: 58px; }
