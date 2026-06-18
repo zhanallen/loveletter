@@ -1435,7 +1435,16 @@ function renderGameTable() {
     </div>`;
   });
   
-  let centerHtml = `<div class="table-center"><div class="center-piles">`;
+  let centerHtml = `<div class="table-center">`;
+  centerHtml += `<div style="display:flex;align-items:center;gap:12px;">`;
+  
+  if (state.faceUpRemoved && state.faceUpRemoved.length > 0) {
+    let faceupCards = state.faceUpRemoved.map(v => `<span class="center-faceup-card" title="${cardName(v)}">${cardRoman(v)}</span>`).join('');
+    centerHtml += `<div class="center-faceup-piles" style="margin-top:0;margin-right:8px;">${faceupCards}</div>`;
+  }
+  
+  centerHtml += `<div style="display:flex;flex-direction:column;align-items:center;">`;
+  centerHtml += `<div class="center-piles">`;
   if (state.deck.length > 0) {
     let deckClass = 'draw-pile-deck';
     let deckAttr = '';
@@ -1452,12 +1461,12 @@ function renderGameTable() {
   if (state.removedCard != null) {
     centerHtml += `<div class="draw-pile-deck" style="opacity: 0.35; transform: rotate(15deg); margin-left: -12px;"></div>`;
   }
-  centerHtml += `</div><div class="center-deck-count">牌堆剩餘: ${state.deck.length} 張</div>`;
-  if (state.faceUpRemoved && state.faceUpRemoved.length > 0) {
-    let faceupCards = state.faceUpRemoved.map(v => `<span class="center-faceup-card" title="${cardName(v)}">${cardRoman(v)}</span>`).join('');
-    centerHtml += `<div class="center-faceup-piles">${faceupCards}</div>`;
-  }
-  centerHtml += `</div>`;
+  centerHtml += `</div>`; // end center-piles
+  centerHtml += `<div class="center-deck-count">牌堆剩餘: ${state.deck.length} 張</div>`;
+  centerHtml += `</div>`; // end right column
+  
+  centerHtml += `</div>`; // end flex row
+  centerHtml += `</div>`; // end table-center`;
   
   let myHandHtml = '';
   if (me && me.alive) {
