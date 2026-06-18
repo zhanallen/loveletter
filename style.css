@@ -273,7 +273,7 @@ input[type=text]:focus{outline:2px solid var(--gold-light);}
 
 .modal-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;
-  z-index:50;padding:20px;
+  z-index:2000;padding:20px;
 }
 .modal-box{
   background:var(--parchment);color:var(--ink);border-radius:10px;padding:20px;max-width:420px;width:100%;

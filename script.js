@@ -1145,7 +1145,7 @@ function runBotTurn(){
 function toggleRules(){ rulesOpen=!rulesOpen; render(); }
 
 function renderNoticeModal(){
-  return `<div class="modal-overlay" style="z-index:80;">
+  return `<div class="modal-overlay" style="z-index:3000;">
     <div class="modal-box">
       <h3>${escapeHtml(notice.title)}</h3>
       <p style="font-size:15px;line-height:1.6;">${escapeHtml(notice.body)}</p>
